@@ -25,7 +25,7 @@ public class GAMain {
 		int		numAlgPara		= 2;	// 알고리즘 환경변수 개수
 		int		binaryStrSize	= 5;	// 이진문자열 크기
 		float[]	min				= {0.1f,2.0f};	// 알고리즘의 환경변수로 설정될 수 있는 최소값
-		float[]	max				= {1.0f,75.0f};	// 알고리즘의 환경변수로 설정될 수 있는 최대값
+		float[]	max				= {1.0f,80.0f};	// 알고리즘의 환경변수로 설정될 수 있는 최대값
 		int		classIndex		= 4;		// 입력데이터에 대한 클래스 속성 설정
 		
 		
