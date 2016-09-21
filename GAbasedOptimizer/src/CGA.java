@@ -1,14 +1,12 @@
 import java.util.Hashtable;
 import java.util.Random;
 
-import weka.classifiers.functions.MultilayerPerceptron;
 import weka.classifiers.trees.J48;
 import weka.core.Instances;
 
 public class CGA {
 
 	private int 		_popSize;
-	private int 		_maxGen;
 	private Random 		_random;
 	private float		_crossProb;
 	private float		_mutProb;
@@ -29,12 +27,11 @@ public class CGA {
 	 * @param crossProb	±³¹è È®·ü
 	 * @param mutProb	µ¹¿¬º¯ÀÌ È®·ü
 	 */
-	public void setParameters(int popSize, int maxGen, int seed, float crossProb, float mutProb) {
+	public void setParameters(int popSize, int seed, float crossProb, float mutProb) {
 		
 		this._popSize 	= popSize;
 		this._crossProb = crossProb;
 		this._mutProb 	= mutProb;
-		this._maxGen 	= maxGen;
 		this._random 	= new Random(seed);
 		
 	}

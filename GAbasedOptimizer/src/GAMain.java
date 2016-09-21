@@ -19,7 +19,7 @@ public class GAMain {
 		float 	crossProb 		= 0.9f;
 		float	mutProb			= 0.5f;
 		
-		ga.setParameters(popSize,maxGeneration,seed,crossProb,mutProb);
+		ga.setParameters(popSize,seed,crossProb,mutProb);
 		
 		// 초기 개체집단 생성
 		int 	numAttri		= 5;	// 입력속성 개수
