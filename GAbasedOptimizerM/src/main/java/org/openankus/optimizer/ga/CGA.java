@@ -2,23 +2,24 @@ package org.openankus.optimizer.ga;
 import java.util.Hashtable;
 import java.util.Random;
 
-import weka.classifiers.trees.J48;
+import org.openankus.optimizer.ml.Algorithm;
+import org.openankus.optimizer.ml.Model;
+import org.openankus.optimizer.ml.Parameter;
+
 import weka.core.Instances;
 
 public class CGA {
 
-	private int 		_popSize;
-	private Random 		_random;
-	private float		_crossProb;
-	private float		_mutProb;
-	private CChrom[]	_pop;
+	private int 		_popSize;			// 개체크기
+	private Random 		_random;			// 난수 발생 객체
+	private float		_crossProb;			// 교배확률
+	private float		_mutProb;			// 돌연변이 확률
+	private CChrom[]	_pop;				// 개체집단
 	
-	private int 		_numAttri;
-	private int			_numAlgPara;
-	private int 		_binaryStrSize;
-	private float[]		_minAlgPara;
-	private float[]		_maxAlgPara;
-	private int[]		_mask;
+	private int 		_numAttri;			// 입력데이터 속성 개수
+	private int			_numAlgPara;		// 최적화시킬 알고리즘 환경변수 개수
+	private int 		_binaryStrSize;		// 하나의 실수 값을 표현할 이진코드 개수
+	private int[]		_mask;				// 10진수를 계산하기 위한 마스크
 	
 	/**
 	 * 유전자알고리즘 환경변수 설정 함수
@@ -48,14 +49,12 @@ public class CGA {
 	 * @param max			알고리즘 환경변수로 설정될 수 있는 최대값
 	 * @param classindex	클래스 인덱스
 	 */
-	public void setInitialPopulation(int numAttri, int numAlgPara, int binaryStrSize, float[] min, float[] max, int classIndex) {
+	public void setInitialPopulation(int numAttri, int numAlgPara, int binaryStrSize, int classIndex) {
 		
 		this._numAttri = numAttri;
 		this._numAlgPara = numAlgPara;
 		this._binaryStrSize = binaryStrSize;
-		this._minAlgPara = min.clone();
-		this._maxAlgPara = max.clone();
-		
+
 		this._pop = new CChrom [this._popSize];
 		
 		for(int i=0 ; i<this._popSize ; i++){
@@ -66,75 +65,6 @@ public class CGA {
 		this._mask = new int [this._binaryStrSize];
 		for(int i=0 ; i<this._binaryStrSize ; i++ ){
 			this._mask[i] = (int)Math.pow(2.0, (double)i);
-		}
-	}
-
-	/**
-	 * 개체집단을 구성하고 있는 각 개체의 적합도 생성
-	 * @param decisionTree	예측모델을 생성할 수 있는 알고리즘 객체
-	 * @param data			예측모델을 생성하기 위한 입력데이터(학습데이터와 테스트데이터)
-	 * @throws Exception 
-	 */
-	public void setFitnessVal(J48 decisionTree, Instances data) throws Exception {
-	
-		float[] val;
-		int index;
-		int algParaCount;
-		Instances tempData;
-		
-		for(int i=0 ; i<this._popSize ; i++){
-			
-			tempData = new Instances(data);
-			val = new float [this._numAlgPara];
-			
-			// 속성선택 유무를 표현하는 유전인자 인코딩	
-			index = 0; 
-			for(int j=0 ; j<tempData.numAttributes() ; index++){
-				if(this._pop[i].getGene(index)==1){
-					tempData.deleteAttributeAt(j);
-				}else{
-					j++;
-				}
-			}
-			
-			// 알고리즘 환경변수를 표현하는 유전인자 인코딩
-			algParaCount = 0;
-			int numGene = this._numAttri+(this._numAlgPara * this._binaryStrSize);
-			for(int j=this._numAttri ; j < numGene  ; j=j+this._binaryStrSize){
-				index = 0;
-				for(int k = j ; index<this._binaryStrSize ; index++, k++){
-					val[algParaCount] += this._pop[i].getGene(k)*this._mask[index];
-				}
-				algParaCount++;
-			}
-
-			
-			for(int j=0 ; j<this._numAlgPara ; j++){
-				System.out.println("10진수: "+ j+" : "+val[j]);
-				val[j] = ((val[j]*(float)(this._maxAlgPara[j]-this._minAlgPara[j]))/((float)Math.pow(2.0, (double)this._binaryStrSize)-1.0f))+(float)this._minAlgPara[j];
-				System.out.println("정규화: "+ j+" : "+val[j]);
-			}
-			
-			//모델 생성
-			decisionTree.setConfidenceFactor(val[0]);
-			decisionTree.setMinNumObj((int)val[1]);
-			decisionTree.buildClassifier(tempData);
-			
-			System.out.println(decisionTree.toString());
-			System.exit(1);
-			
-			//모델 평가
-			double realOutput;
-			int correctCount = 0; 
-			for(int j=0 ; j<tempData.numInstances() ; j++){
-				realOutput = decisionTree.classifyInstance(tempData.instance(j));
-				if(tempData.instance(j).value(tempData.classIndex()) == realOutput){
-					correctCount++;
-				}
-			}
-			
-			this._pop[i].setFitness((float)correctCount/(float)tempData.numInstances());
-			this._pop[i].setModel(decisionTree);
 		}
 	}
 
@@ -302,6 +232,60 @@ public class CGA {
 		
 		
 		return this._pop[max];
+	}
+
+	/**
+	 * 개체 평가 함수
+	 * @param model		예측모델을 생성할 모델 객체
+	 * @param algorithm	예측모델을 생성할 알고리즘 객체
+	 * @param parameters	예측모델을 생성할 알고리즘의 환경변수 설정 값
+	 */
+	public void evaluation(Model model, Algorithm algorithm, Parameter[] parameters) {
+
+		float[] val;
+		int index;
+		int algParaCount;
+		Instances tempData;
+		
+		for(int i=0 ; i<this._popSize ; i++){
+			
+			tempData = new Instances(model.getInstance());
+			val = new float [this._numAlgPara];
+			
+			// 속성선택 유무를 표현하는 유전인자 인코딩	
+			index = 0; 
+			for(int j=0 ; j<tempData.numAttributes() ; index++){
+				if(this._pop[i].getGene(index)==1){
+					tempData.deleteAttributeAt(j);
+				}else{
+					j++;
+				}
+			}
+			
+			// 알고리즘 환경변수를 표현하는 유전인자 인코딩
+			algParaCount = 0;
+			int numGene = this._numAttri+(this._numAlgPara * this._binaryStrSize);
+			for(int j=this._numAttri ; j < numGene  ; j=j+this._binaryStrSize){
+				index = 0;
+				for(int k = j ; index<this._binaryStrSize ; index++, k++){
+					val[algParaCount] += this._pop[i].getGene(k)*this._mask[index];
+				}
+				algParaCount++;
+			}
+
+
+			for(int j=0 ; j<parameters.length ; j++){
+				parameters[j].decoding(val[j], this._binaryStrSize);
+			}
+			
+			//모델 생성 및 평가
+			model.methodwData(algorithm,tempData,parameters);
+			
+			this._pop[i].setFitness((float)model.getAccuracy());
+			this._pop[i].setModel(model);
+			
+		}		
+		
 	}
 
 }

@@ -1,14 +1,13 @@
 package org.openankus.optimizer.ga;
 import java.util.Random;
 
-import weka.classifiers.AbstractClassifier;
-import weka.classifiers.trees.J48;
+import org.openankus.optimizer.ml.Model;
 
 public class CChrom {
 
-	private int[]	_chromosome;
-	private float	_fitness;
-	private J48 	_model;
+	private int[]	_chromosome;		// 개체: 이진코드로 표현
+	private float	_fitness;			// 적합도
+	private Model	_model;				// 개체에 의해 생성된 모델
 	
 	/**
 	 * 생성자
@@ -114,16 +113,18 @@ public class CChrom {
 	}
 
 	/**
-	 * 생성된 분류모델을 복사하는 함수
+	 * 생성된 모델 정보를 출력하는 함수
 	 */
-	public void setModel(J48 decisionTree) throws Exception {
-		this._model = (J48)AbstractClassifier.makeCopy(decisionTree); 
+	public void toStringModel() {
+		this._model.toSummaryString();
 	}
 
-	public void toStringModel() {
-		
-		System.out.println(this._model.toSummaryString());
-		System.out.println(this._model.toString());
+	/**
+	 * 모델 객체를 복사하는 함수
+	 * @param model	복사될 모델 객체
+	 */
+	public void setModel(Model model) {
+		this._model = model.copy();
 	}
 
 
