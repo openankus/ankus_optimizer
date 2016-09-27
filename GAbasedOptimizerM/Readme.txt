@@ -1,0 +1,96 @@
+class kNN
+{
+	public String 	input = "", 
+					output = "",
+					indexList = "",
+					nominalindexList = "",
+					exceptionindexList = "",
+					classIndex = "";
+	public int k = 1;
+	public String 	distanceOption = "";
+	public boolean 	distanceWeight = false, 
+			       	isValidation = false;
+	public String 	delimiter = "\t";
+	
+	public void build_run() throws Exception
+    {
+		String[] kNN_Argument = null;
+	
+		kNN_Argument = new String[22];
+		kNN_Argument[0]  ="-input";
+        kNN_Argument[1]  = input;
+        kNN_Argument[2]  ="-output";
+        kNN_Argument[3]  = output;
+        kNN_Argument[4]  ="-indexList";
+        kNN_Argument[5]  = indexList;
+        if(!nominalindexList.equals(""))
+        {
+            kNN_Argument[6]  ="-nominalIndexList";
+            kNN_Argument[7]  = nominalindexList;
+        }
+        else
+        {
+        	kNN_Argument[6]  ="-nominalIndexList";
+            kNN_Argument[7]  ="";
+        }
+        if(!exceptionindexList.equals(""))
+        {
+        	kNN_Argument[8]  ="-exceptionIndexList";
+            kNN_Argument[9]  = exceptionindexList;
+        }
+        else
+        {
+        	kNN_Argument[8]  ="-exceptionIndexList";
+            kNN_Argument[9]  = "";
+        }
+        
+        kNN_Argument[10]  ="-classIndex";
+        kNN_Argument[11]  = classIndex;
+        kNN_Argument[12]  ="-k";
+        kNN_Argument[13]  = k+"";
+        kNN_Argument[14]  ="-distanceOption";
+        kNN_Argument[15]  = distanceOption;
+        kNN_Argument[16]  ="-distanceWeight";
+        if(distanceWeight == false)
+        	kNN_Argument[17]  ="false";
+        else
+        	kNN_Argument[17]  ="true";
+        
+        kNN_Argument[18]  ="-isValidation";
+        if(isValidation == false)
+        	kNN_Argument[19]  ="false";
+        else
+        	kNN_Argument[19]  ="true";
+        kNN_Argument[20]  ="-delimiter";
+        kNN_Argument[21]  = delimiter;
+	
+		kNNDriver kNN = new kNNDriver();
+    	int res = kNN.kNN_main(kNN_Argument);
+    	if(res != 0 ){
+    		System.out.println("kNN Build Failed");
+    	}
+    	else
+    	{
+    		System.out.println("kNN Build Success");
+    	}
+    }
+	
+}
+
+public class ankus_api 
+{
+    public static void main( String[] args ) throws Exception
+    {
+    	kNN  knn = new kNN();
+    	knn.input = "/iris.csv";
+    	knn.output = "/iris_knn";
+    	knn.indexList = "0,1,2,3";
+    	knn.nominalindexList = "";
+    	knn.classIndex = "4";
+    	knn.k = 3;
+    	knn.distanceOption = "uclidean";
+    	knn.isValidation = true;
+    	knn.delimiter = ",";
+    	knn.build_run();
+   	}
+}
