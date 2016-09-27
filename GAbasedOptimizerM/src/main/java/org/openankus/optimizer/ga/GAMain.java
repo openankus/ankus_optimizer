@@ -4,100 +4,153 @@ import java.io.FileReader;
 
 import org.openankus.optimizer.ml.Algorithm;
 import org.openankus.optimizer.ml.DecisionTreeC45;
+import org.openankus.optimizer.ml.KNN;
 import org.openankus.optimizer.ml.MLP;
 import org.openankus.optimizer.ml.Model;
 import org.openankus.optimizer.ml.Parameter;
+import org.openankus.optimizer.ml.RForest;
 
 import weka.core.Instances;
 
 public class GAMain {
+	
+	private static CGA _ga	= null;
+	private static Parameter[] _parameters = null;
 
 	public static void main(String[] args) throws Exception {
 		
+		//GA 환경변수 설정
+		//cmd 예: -s 1 -p 10 -mG 3 -cp 0.9 -mp 0.5 -bs 5 -in D:/Programs/data/iris.arff
+		int 	seed = 1;
+		int 	popSize = 10;
+		int		maxGeneration = 3;
+		float 	crossProb = 0.9f;
+		float	mutProb = 0.5f;
+		int		binaryStrSize = 5;	// 이진문자열 크기
+		String  inputFile = "D:/Programs/data/iris.arff";
+		
+		String parname = "";
+		for(String arg:args){
+			if(parname.isEmpty() && arg.startsWith("-")){
+				parname =arg;
+			}else{
+				if(parname.equals("-s")){
+					seed = Integer.parseInt(arg);			// 렌덤씨드
+					System.out.println("랜덤씨드: "+seed);
+				}else if(parname.equals("-p")){
+					popSize = Integer.parseInt(arg); 		// 개체크기
+					System.out.println("개체크기: "+popSize);
+				}else if(parname.equals("-mG")){
+					maxGeneration = Integer.parseInt(arg); 	// 최대 세대수
+					System.out.println("최대 세대수: "+maxGeneration);
+				}else if(parname.equals("-cp")){
+					crossProb = Float.parseFloat(arg);		// 교배확률
+					System.out.println("교배확률: "+crossProb);
+				}else if(parname.equals("-mp")){
+					mutProb = Float.parseFloat(arg);		// 돌연변이 확률
+					System.out.println("돌연변이 확률: "+mutProb);
+				}else if(parname.equals("-bs")){
+					binaryStrSize = Integer.parseInt(arg);	// 이진문자열 크기
+					System.out.println("이진문자열 크기: "+binaryStrSize);
+				}else if(parname.equals("-in")){
+					inputFile = arg;						// 입력데이터 파일
+					System.out.println("입력데이터: "+inputFile);
+				}
+				parname = "";
+			}
+		}
+		
+		
 		// GA 객체 생성
-		CGA ga = new CGA();
-		
-		// GA 환경변수 설정
-		int 	seed 			= 1;
-		int 	popSize			= 10;
-		int		maxGeneration 	= 3;
-		float 	crossProb 		= 0.9f;
-		float	mutProb			= 0.5f;
-		int		binaryStrSize	= 5;	// 이진문자열 크기
-		
-		ga.setParameters(popSize,seed,crossProb,mutProb);
+		_ga = new CGA();
+		_ga.setParameters(popSize,seed,crossProb,mutProb);
 		
 		// 초기 개체집단 생성
 		int 	numAttri		= 5;		// 입력속성 개수	
 		int		classIndex		= 4;		// 입력데이터에 대한 클래스 속성 설정
 		
 		// weka 입력데이터 불러옴 (arff 파일)
-		BufferedReader reader = new BufferedReader(new FileReader("D:/Programs/data/iris.arff"));
+		BufferedReader reader = new BufferedReader(new FileReader(inputFile));
 		Instances data = new Instances(reader);
 		data.setClassIndex(classIndex);
 		
 		Model model = new Model(data);
 		Algorithm 	algorithm = null;
 		int			numAlgPara = -1;
-		Parameter[] parameters = null;
-		
-		switch("MLP"){
+	
+		switch("RandomForest"){
 		case "C45":
+			System.out.println("C45");
 			algorithm = new DecisionTreeC45();
 			numAlgPara = 2;
-			parameters = new Parameter[numAlgPara];
-			parameters[0] = new Parameter("CF",0.1f,1.0f);
-			parameters[1] = new Parameter("min",2.0f,80.0f);
+			_parameters = new Parameter[numAlgPara];
+			_parameters[0] = new Parameter("CF",0.1f,1.0f);
+			_parameters[1] = new Parameter("min",2.0f,80.0f);
 			break;
 		case "MLP":
+			System.out.println("MLP");			
 			algorithm = new MLP();
 			numAlgPara = 3;
-			parameters = new Parameter[numAlgPara];
-			parameters[0] = new Parameter("lr",0.1f,1.0f);
-			parameters[1] = new Parameter("mm",0.1f,1.0f);
-			parameters[2] = new Parameter("h",1.0f,50.0f);
+			_parameters = new Parameter[numAlgPara];
+			_parameters[0] = new Parameter("lr",0.1f,1.0f);
+			_parameters[1] = new Parameter("mm",0.1f,1.0f);
+			_parameters[2] = new Parameter("h",1.0f,50.0f);
 			break;
+		case "KNN":
+			System.out.println("KNN");	
+			algorithm = new KNN();
+			numAlgPara = 1;
+			_parameters = new Parameter[numAlgPara];
+			_parameters[0] = new Parameter("k",1.0f,50.f);
+			break;
+		case "RandomForest":
+			System.out.println("RandomForest");	
+			algorithm = new RForest();
+			numAlgPara = 2;
+			_parameters = new Parameter[numAlgPara];
+			_parameters[0] = new Parameter("MD",0.0f,50.0f);
+			_parameters[1] = new Parameter("numDT",1.0f,100.0f);
+			
 		};
 		
 		
 		if(numAlgPara != -1){
 			// 개체초기화
-			ga.setInitialPopulation(numAttri,numAlgPara,binaryStrSize,classIndex);
+			_ga.setInitialPopulation(numAttri,numAlgPara,binaryStrSize,classIndex);
 	//		System.out.println("개체 초기화 완료...");
 			
 			// 개체평가	
-			ga.evaluation(model,algorithm,parameters);
+			_ga.evaluation(model,algorithm,_parameters);
 			
 			int generation = 0;
-			System.out.println(" ************************************ "+generation+" 세대: "+ga.getelitist().getFitness());
-			ga.getelitist().toStringModel();
+			System.out.println(" ************************************ "+generation+" 세대: "+_ga.getelitist().getFitness());
+			_ga.getelitist().toStringModel();
 			
 			do{
 				// 개체선택
-				ga.selectMethod();
+				_ga.selectMethod();
 	//			System.out.println("개체 선택 완료..");
 			
 				// 교배 확률
-				ga.crossover();
+				_ga.crossover();
 	//			System.out.println("개체 교배 완료..");
 			
 				// 돌연변이 확률
-				ga.mutation(classIndex);
+				_ga.mutation(classIndex);
 	//			System.out.println("개체 돌연변이 완료..");
 				
 				// 개체평가	
-				ga.evaluation(model,algorithm,parameters);			
+				_ga.evaluation(model,algorithm,_parameters);			
 				
 				generation++;
 				
-				System.out.println(" ************************************ "+generation+" 세대: "+ga.getelitist().getFitness());
-				ga.getelitist().toStringModel();
+				System.out.println(" ************************************ "+generation+" 세대: "+_ga.getelitist().getFitness());
+				_ga.getelitist().toStringModel();
 	
 			}while(generation <= maxGeneration);
 		}else{
 			System.out.println("오류 00001");
 		}
-		
 		
 	}
 
