@@ -81,6 +81,7 @@ public class GaChromSetMap extends Mapper<LongWritable, Text, Text, Text>{
 		float 	crossProb = Float.parseFloat(context.getConfiguration().get("GaChromSetMap.crossProb"));
 		float	mutProb = Float.parseFloat(context.getConfiguration().get("GaChromSetMap.mutProb"));
 		int		binaryStrSize = Integer.parseInt(context.getConfiguration().get("GaChromSetMap.binaryStrSize"));	// 이진문자열 크기
+		String	algorithmName = context.getConfiguration().get("GaChromSetMap.algorithmName");
 		String  inputFile = cacheFiles[0].toString(); //
 		
 
@@ -106,7 +107,7 @@ public class GaChromSetMap extends Mapper<LongWritable, Text, Text, Text>{
 		int			numAlgPara = -1;
 		
 		Parameter[] _parameters = null;
-		switch("RandomForest"){
+		switch(algorithmName){
 		case "C45":
 			System.out.println("C45");
 			algorithm = new DecisionTreeC45();

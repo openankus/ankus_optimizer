@@ -69,10 +69,10 @@ public class GaChromSetMain {
 	//GA 환경변수 설정
 	//cmd 예: -s 1 -p 10 -mG 3 -cp 0.9 -mp 0.5 -bs 5 -in D:/Programs/data/iris.arff
 	static int 	seed = 1;
-//	static int 	popSize = 300;
-//	static int		maxGeneration = 500;
-	static int 		popSize = 10;
-	static int		maxGeneration = 10;
+	static int 		popSize = 300;
+	static int		maxGeneration = 500;
+//	static int 		popSize = 3000;
+//	static int		maxGeneration = 2;
 	static float 	crossProb = 0.9f;
 	static float	mutProb = 0.5f;
 	static int		binaryStrSize = 5;	// 이진문자열 크기
@@ -83,8 +83,10 @@ public class GaChromSetMain {
 	// 초기 개체집단 생성
 	static int 	numAttri        = 9;		// 입력속성 개수	
 	static int	classIndex		= 8;		// 입력데이터에 대한 클래스 속성 설정
-	static int	numAlgPara = -1;
+	static String algorithmName = "C45";
 	
+	// 개체집합 당 개체수
+	static int sizeOfSet = 20;
 	
 
 	public static void main(String[] args) throws Exception {
@@ -113,7 +115,9 @@ public class GaChromSetMain {
 	 */
 	public static void doParrallelGa(String[] args) throws Exception{
 
-		switch("RandomForest"){
+		int numAlgPara = -1;
+		
+		switch(algorithmName){
 		case "C45":
 			System.out.println("C45");
 			numAlgPara = 2;
@@ -140,7 +144,6 @@ public class GaChromSetMain {
 			ga.setParameters(popSize,seed,crossProb,mutProb);
 			Chrom[] chromList = ga.setInitialPopulation(numAttri, numAlgPara, binaryStrSize, classIndex);
 			String chromSetListFilePath = DIR_POP+"/chromSet.txt"; 
-			int sizeOfSet = 10;
 			saveInitChromSetList(chromList, sizeOfSet, chromSetListFilePath);
 			System.out.println("개체 초기화 완료...");
 			//-----</개체 초기화 및 개체집합 파일저장>------
@@ -282,6 +285,14 @@ public class GaChromSetMain {
 			Configuration conf = getConf();
 		    Job job = new Job(conf, "GaChromSetDrive");
 		    
+		    // Job MapRuduce 실행 파라메터 설정
+		    job.getConfiguration().set("mapred.max.split.size", String.valueOf(2048));	// 최대 split size
+//		    int numSlaves = 4;	//	Slave(데이터 노드) 개수
+//		    int estSplitSize = 60 * popSize / numSlaves;	//	Slave 당 map task가 수행되게하는 예측 최대 split 사이즈
+//		    job.getConfiguration().set("mapred.max.split.size", String.valueOf(estSplitSize));	// 최대 split size
+//		    job.getConfiguration().set("mapred.min.split.size", String.valueOf(1024));	// 최소 split size
+//		    job.getConfiguration().set("mapred.map.tasks", String.valueOf(10000));	// 수행 map task 수
+		    
 		    // MapReduce에 사용될 파라메터 설정
 		    job.getConfiguration().set("GaChromSetMap.seed", String.valueOf(seed));
 		    job.getConfiguration().set("GaChromSetMap.popSize", String.valueOf(popSize));
@@ -291,7 +302,7 @@ public class GaChromSetMain {
 		    job.getConfiguration().set("GaChromSetMap.binaryStrSize", String.valueOf(binaryStrSize));
 		    job.getConfiguration().set("GaChromSetMap.numAttri", String.valueOf(numAttri));
 		    job.getConfiguration().set("GaChromSetMap.classIndex", String.valueOf(classIndex));
-		    job.getConfiguration().set("GaChromSetMap.numAlgPara", String.valueOf(numAlgPara));
+		    job.getConfiguration().set("GaChromSetMap.algorithmName", String.valueOf(algorithmName));
 			
 		    
 		    
