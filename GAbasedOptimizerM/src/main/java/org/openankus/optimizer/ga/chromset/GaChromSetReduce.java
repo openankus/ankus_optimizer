@@ -16,8 +16,10 @@ import org.apache.hadoop.mapreduce.lib.output.MultipleOutputs;
  *
  */
 public class GaChromSetReduce extends Reducer<Text, Text, Text, Text>{
-	
+
+	//	다중 파일출력을 위한 객체
 	private MultipleOutputs<Text, Text> mos = null;
+	
 	
 	@Override
 	protected void setup(Reducer<Text, Text, Text, Text>.Context context)
@@ -39,10 +41,7 @@ public class GaChromSetReduce extends Reducer<Text, Text, Text, Text>{
 			Text value = iter.next();
 			
 			//----<개체집합 단위 출력파일 쓰기>------
-//			FloatWritable avgFitness = key;
 			Text chromSetId = key;
-//			context.write(point, value);
-//			mos.write("chromSet", avgFitness, value);
 			mos.write(GaChromSetMain.PREFIX_CHROMSET, chromSetId, value);
 			//----<개체집합 단위 출력파일 쓰기>------
 			

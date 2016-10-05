@@ -64,9 +64,30 @@ public class GaChromSetMain {
 	 */
 	public static final String PREFIX_CHROM = "chrom";
 	
+	
+	
+	//GA 환경변수 설정
+	//cmd 예: -s 1 -p 10 -mG 3 -cp 0.9 -mp 0.5 -bs 5 -in D:/Programs/data/iris.arff
+	static int 	seed = 1;
+//	static int 	popSize = 300;
+//	static int		maxGeneration = 500;
+	static int 		popSize = 10;
+	static int		maxGeneration = 10;
+	static float 	crossProb = 0.9f;
+	static float	mutProb = 0.5f;
+	static int		binaryStrSize = 5;	// 이진문자열 크기
+//	String  inputFile = "D:/Programs/data/iris.arff";
+//	String  inputFile = DIR_INPUT_DATA+"/iris.arff";
+	static String  inputFile = DIR_INPUT_DATA+"/nursery_shuffle.arff";
+	
+	// 초기 개체집단 생성
+	static int 	numAttri        = 9;		// 입력속성 개수	
+	static int	classIndex		= 8;		// 입력데이터에 대한 클래스 속성 설정
+	static int	numAlgPara = -1;
+	
+	
 
 	public static void main(String[] args) throws Exception {
-		
 		
 		// Start time
 		long startTime = System.nanoTime();
@@ -92,112 +113,31 @@ public class GaChromSetMain {
 	 */
 	public static void doParrallelGa(String[] args) throws Exception{
 
-		
-		//GA 환경변수 설정
-		//cmd 예: -s 1 -p 10 -mG 3 -cp 0.9 -mp 0.5 -bs 5 -in D:/Programs/data/iris.arff
-		int 	seed = 1;
-//		int 	popSize = 300;
-//		int		maxGeneration = 500;
-		int 	popSize = 20;
-		int		maxGeneration = 10;
-		float 	crossProb = 0.9f;
-		float	mutProb = 0.5f;
-		int		binaryStrSize = 5;	// 이진문자열 크기
-//		String  inputFile = "D:/Programs/data/iris.arff";
-//		String  inputFile = DIR_INPUT_DATA+"/iris.arff";
-		String  inputFile = DIR_INPUT_DATA+"/nursery_shuffle.arff";
-		
-		String parname = "";
-		for(String arg:args){
-			if(parname.isEmpty() && arg.startsWith("-")){
-				parname =arg;
-			}else{
-				if(parname.equals("-s")){
-					seed = Integer.parseInt(arg);			// 렌덤씨드
-					System.out.println("랜덤씨드: "+seed);
-				}else if(parname.equals("-p")){
-					popSize = Integer.parseInt(arg); 		// 개체크기
-					System.out.println("개체크기: "+popSize);
-				}else if(parname.equals("-mG")){
-					maxGeneration = Integer.parseInt(arg); 	// 최대 세대수
-					System.out.println("최대 세대수: "+maxGeneration);
-				}else if(parname.equals("-cp")){
-					crossProb = Float.parseFloat(arg);		// 교배확률
-					System.out.println("교배확률: "+crossProb);
-				}else if(parname.equals("-mp")){
-					mutProb = Float.parseFloat(arg);		// 돌연변이 확률
-					System.out.println("돌연변이 확률: "+mutProb);
-				}else if(parname.equals("-bs")){
-					binaryStrSize = Integer.parseInt(arg);	// 이진문자열 크기
-					System.out.println("이진문자열 크기: "+binaryStrSize);
-				}else if(parname.equals("-in")){
-					inputFile = arg;						// 입력데이터 파일
-					System.out.println("입력데이터: "+inputFile);
-				}
-				parname = "";
-			}
-		}
-		
-		
-		// GA 객체 생성
-		GA ga = new GA();
-		ga.setParameters(popSize,seed,crossProb,mutProb);
-		
-		
-		
-		// 초기 개체집단 생성
-		int 	numAttri        = 9;		// 입력속성 개수	
-		int		classIndex		= 8;		// 입력데이터에 대한 클래스 속성 설정
-		
-//		// weka 입력데이터 불러옴 (arff 파일)
-//		BufferedReader reader = new BufferedReader(new FileReader(inputFile));
-//		Instances data = new Instances(reader);
-//		data.setClassIndex(classIndex);
-		
-//		Model model = new Model(data);
-		Algorithm 	algorithm = null;
-		int			numAlgPara = -1;
-	
-		Parameter[] parameters = null;
 		switch("RandomForest"){
 		case "C45":
 			System.out.println("C45");
-			algorithm = new DecisionTreeC45();
 			numAlgPara = 2;
-			parameters = new Parameter[numAlgPara];
-			parameters[0] = new Parameter("CF",0.1f,0.5f);
-			parameters[1] = new Parameter("min",2.0f,80.0f);
 			break;
 		case "MLP":
 			System.out.println("MLP");			
-			algorithm = new MLP();
 			numAlgPara = 3;
-			parameters = new Parameter[numAlgPara];
-			parameters[0] = new Parameter("lr",0.1f,1.0f);
-			parameters[1] = new Parameter("mm",0.1f,1.0f);
-			parameters[2] = new Parameter("h",1.0f,50.0f);
 			break;
 		case "KNN":
 			System.out.println("KNN");	
-			algorithm = new KNN();
 			numAlgPara = 1;
-			parameters = new Parameter[numAlgPara];
-			parameters[0] = new Parameter("k",1.0f,50.f);
 			break;
 		case "RandomForest":
 			System.out.println("RandomForest");	
-			algorithm = new RForest();
 			numAlgPara = 2;
-			parameters = new Parameter[numAlgPara];
-			parameters[0] = new Parameter("MD",0.0f,50.0f);
-			parameters[1] = new Parameter("numDT",1.0f,100.0f);
-			
 		};
 		
 		
 		if(numAlgPara != -1){
 			
 			//-----<개체 초기화 및 개체집합 파일저장>------
+			// GA 객체 생성
+			GA ga = new GA();
+			ga.setParameters(popSize,seed,crossProb,mutProb);
 			Chrom[] chromList = ga.setInitialPopulation(numAttri, numAlgPara, binaryStrSize, classIndex);
 			String chromSetListFilePath = DIR_POP+"/chromSet.txt"; 
 			int sizeOfSet = 10;
@@ -207,7 +147,7 @@ public class GaChromSetMain {
 			
 
 			//	최대 분산병렬 GA 횟수
-			int maxParrallelGa = 2;
+			int maxParrallelGa = 1;
 			
 			//	분산병렬 GA 수행 횟수
 			int countParallelGa = 0;
@@ -341,6 +281,19 @@ public class GaChromSetMain {
 		    // Job 이름 설정
 			Configuration conf = getConf();
 		    Job job = new Job(conf, "GaChromSetDrive");
+		    
+		    // MapReduce에 사용될 파라메터 설정
+		    job.getConfiguration().set("GaChromSetMap.seed", String.valueOf(seed));
+		    job.getConfiguration().set("GaChromSetMap.popSize", String.valueOf(popSize));
+		    job.getConfiguration().set("GaChromSetMap.maxGeneration", String.valueOf(maxGeneration));
+		    job.getConfiguration().set("GaChromSetMap.crossProb", String.valueOf(crossProb));
+		    job.getConfiguration().set("GaChromSetMap.mutProb", String.valueOf(mutProb));
+		    job.getConfiguration().set("GaChromSetMap.binaryStrSize", String.valueOf(binaryStrSize));
+		    job.getConfiguration().set("GaChromSetMap.numAttri", String.valueOf(numAttri));
+		    job.getConfiguration().set("GaChromSetMap.classIndex", String.valueOf(classIndex));
+		    job.getConfiguration().set("GaChromSetMap.numAlgPara", String.valueOf(numAlgPara));
+			
+		    
 		    
 		    //---<Map 및 Reduce에 사용될 로컬캐쉬 파일 등록>----
 		    // 학습 데이터  등록

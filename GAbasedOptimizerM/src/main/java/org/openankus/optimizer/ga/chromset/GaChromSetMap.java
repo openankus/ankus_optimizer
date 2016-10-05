@@ -32,14 +32,13 @@ import weka.core.matrix.ExponentialFormat;
  */
 public class GaChromSetMap extends Mapper<LongWritable, Text, Text, Text>{
 	
-	private FloatWritable point = new FloatWritable();
-	private Text resultText = new Text();
-	
+	//	MapReduce 서버별로 로컬캐시된 파일목록
 	private Path[] cacheFiles = null;
 	
-//	FloatWritable outputKey = new FloatWritable();
+	//	출력파일의 key를 쓰기위한 개체
 	Text outputKey = new Text();
 	
+	//	출력파일의 값을 쓰기위한 객체
 	Text outputValue = new Text();
 
 	
@@ -48,37 +47,21 @@ public class GaChromSetMap extends Mapper<LongWritable, Text, Text, Text>{
 	protected void setup(Mapper<LongWritable, Text, Text, Text>.Context context)
 			throws IOException, InterruptedException {
 		// TODO Auto-generated method stub
+		//	로컬 캐시된 파일 목록 로드
 		cacheFiles = DistributedCache.getLocalCacheFiles(context.getConfiguration());
-//		// 훈련데이터 로드(캐시 파일)
-////		Path[] localFiles = DistributedCache.getLocalCacheFiles(context.getConfiguration());
-//		System.out.println("캐시파일Array:"+cacheFiles);
-//		System.out.println("캐시파일개수:"+cacheFiles.length);
-//		for (int idx=0; idx<cacheFiles.length; idx++){
-//			System.out.println("로컬파일명:"+cacheFiles[idx]);
-//		}
-//		{
-////			FileInputStream fis = new FileInputStream(cacheFiles[0].toString());
-//			BufferedReader br = new BufferedReader(new FileReader(cacheFiles[0].toString()));
-//			String rl = null;
-//			while ((rl = br.readLine()) != null){
-//				System.out.println(rl);
-//			}
-//		}
-		
-		
 	}
 	
 	@Override
 	protected void map(LongWritable key, Text value, Mapper<LongWritable, Text, Text, Text>.Context context)
 			throws IOException, InterruptedException {
+		
 
-		System.out.println("입력값:"+value.toString());
-		System.err.println("입력값:"+value.toString());
+//		System.out.println("입력값:"+value.toString());
+//		System.out.println("gaChromset.popSize:"+context.getConfiguration().get("gaChromset.popSize"));
 		
 		
 		//----<1.Map 입력데이터 파싱>---------
 		String[] parts = value.toString().split("\t");
-//		float averageFitness = Float.parseFloat(parts[0]);
 		String chromSetId = parts[0];
 		StringTokenizer tokenizer = new StringTokenizer(parts[1], Chrom.DELIMITER_CHROM);
 		List<Chrom> chromList = new ArrayList<Chrom>();
@@ -92,14 +75,12 @@ public class GaChromSetMap extends Mapper<LongWritable, Text, Text, Text>{
 		
 		//----<2.Map 입력데이터 처리>---------
 		
-		int 	seed = 1;
-//		int 	popSize = 300;
-//		int		maxGeneration = 500;
-		int 	popSize = 20;
-		int		maxGeneration = 10;
-		float 	crossProb = 0.9f;
-		float	mutProb = 0.5f;
-		int		binaryStrSize = 5;	// 이진문자열 크기
+		int 	seed = Integer.parseInt(context.getConfiguration().get("GaChromSetMap.seed"));
+		int 	popSize = Integer.parseInt(context.getConfiguration().get("GaChromSetMap.popSize"));
+		int		maxGeneration = Integer.parseInt(context.getConfiguration().get("GaChromSetMap.maxGeneration"));
+		float 	crossProb = Float.parseFloat(context.getConfiguration().get("GaChromSetMap.crossProb"));
+		float	mutProb = Float.parseFloat(context.getConfiguration().get("GaChromSetMap.mutProb"));
+		int		binaryStrSize = Integer.parseInt(context.getConfiguration().get("GaChromSetMap.binaryStrSize"));	// 이진문자열 크기
 		String  inputFile = cacheFiles[0].toString(); //
 		
 
@@ -110,8 +91,10 @@ public class GaChromSetMap extends Mapper<LongWritable, Text, Text, Text>{
 
 		
 		// 초기 개체집단 생성
-		int 	numAttri        = 9;		// 입력속성 개수	
-		int		classIndex		= 8;		// 입력데이터에 대한 클래스 속성 설정
+		int numAttri = 
+				Integer.parseInt(context.getConfiguration().get("GaChromSetMap.numAttri"));		// 입력속성 개수	
+		int	classIndex = 
+				Integer.parseInt(context.getConfiguration().get("GaChromSetMap.classIndex"));;		// 입력데이터에 대한 클래스 속성 설정
 		
 		// weka 입력데이터 불러옴 (arff 파일)
 		BufferedReader reader = new BufferedReader(new FileReader(inputFile));
@@ -206,8 +189,6 @@ public class GaChromSetMap extends Mapper<LongWritable, Text, Text, Text>{
 		
 		
 		//----<3.Map 출력데이터 처리>---------
-//		//	Key 설정 - 적합도평균
-//		outputKey.set(ga.getAverageFitnessOfPop());
 		//	Key 설정 - 염색체집합 ID
 		outputKey.set(chromSetId);
 
@@ -218,7 +199,7 @@ public class GaChromSetMap extends Mapper<LongWritable, Text, Text, Text>{
 		String popInString = ga.getPopInString();
 		outputValue.set(popInString);
 		
-		System.out.println("ID:"+chromSetId+" / "+popInString);
+//		System.out.println("ID:"+chromSetId+" / "+popInString);
 		
 		//	출력데이터 생성
 		context.write(outputKey, outputValue);
