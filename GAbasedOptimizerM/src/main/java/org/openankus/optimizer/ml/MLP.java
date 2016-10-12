@@ -37,7 +37,7 @@ public class MLP implements Algorithm {
 			e.printStackTrace();
 		}
 		
-		System.out.println(this._mlp.toString());
+//		System.out.println(this._mlp.toString());
 		
 		int correct = 0;
 		int classIndex = data.classIndex();
