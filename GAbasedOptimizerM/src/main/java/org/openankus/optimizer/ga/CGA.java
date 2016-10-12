@@ -199,7 +199,7 @@ public class CGA {
 	public void mutation(int classIndex) {
 		
 		for(int i=1 ; i<this._popSize ; i++){
-			for(int j=0 ; j<this._pop.length ; j++){
+			for(int j=0 ; j<this._pop[i].getGeneSize() ; j++){
 				if(j != classIndex){
 					if(this._random.nextDouble() < this._mutProb){
 						if(this._pop[i].getGene(j) == 0){
@@ -244,6 +244,7 @@ public class CGA {
 
 		float[] val;
 		int index;
+		int usedAttriCount;
 		int algParaCount;
 		Instances tempData;
 		
@@ -254,38 +255,63 @@ public class CGA {
 			
 			// 속성선택 유무를 표현하는 유전인자 인코딩	
 			index = 0; 
+			usedAttriCount = 0;
 			for(int j=0 ; j<tempData.numAttributes() ; index++){
-				if(this._pop[i].getGene(index)==1){
+				if(this._pop[i].getGene(index)==0){
 					tempData.deleteAttributeAt(j);
 				}else{
 					j++;
+					usedAttriCount++;
 				}
 			}
 			
-			// 알고리즘 환경변수를 표현하는 유전인자 인코딩
-			algParaCount = 0;
-			int numGene = this._numAttri+(this._numAlgPara * this._binaryStrSize);
-			for(int j=this._numAttri ; j < numGene  ; j=j+this._binaryStrSize){
-				index = 0;
-				for(int k = j ; index<this._binaryStrSize ; index++, k++){
-					val[algParaCount] += this._pop[i].getGene(k)*this._mask[index];
+			if(usedAttriCount == 1)
+			{
+//				System.out.println(i+ " 개체에서  모델 생성에 사용되는 속성 개수: "+usedAttriCount);
+//				System.exit(1);
+				this._pop[i].setFitness(0.0f);
+				this._pop[i].setModel(null);				
+			}else{
+			
+				// 알고리즘 환경변수를 표현하는 유전인자 인코딩
+				algParaCount = 0;
+				int numGene = this._numAttri+(this._numAlgPara * this._binaryStrSize);
+				for(int j=this._numAttri ; j < numGene  ; j=j+this._binaryStrSize){
+					index = 0;
+					for(int k = j ; index<this._binaryStrSize ; index++, k++){
+						val[algParaCount] += this._pop[i].getGene(k)*this._mask[index];
+					}
+					algParaCount++;
 				}
-				algParaCount++;
-			}
 
 
-			for(int j=0 ; j<parameters.length ; j++){
-				parameters[j].decoding(val[j], this._binaryStrSize);
+				for(int j=0 ; j<parameters.length ; j++){
+					parameters[j].decoding(val[j], this._binaryStrSize);
+				}
+			
+				//모델 생성 및 평가
+				model.methodwData(algorithm,tempData,parameters);
+			
+				this._pop[i].setFitness((float)model.getAccuracy());
+				this._pop[i].setModel(model);
 			}
-			
-			//모델 생성 및 평가
-			model.methodwData(algorithm,tempData,parameters);
-			
-			this._pop[i].setFitness((float)model.getAccuracy());
-			this._pop[i].setModel(model);
 			
 		}		
 		
+	}
+
+	/**
+	 * 현재 개체집단을 구성하고 있는 개체들을 출력하는 함수
+	 * @return 객체가 표현하고 있는 이진 스트링
+	 */
+	public String toStringChroms() {
+		
+		String str = "";
+		
+		for(int i=0 ; i<this._popSize ; i++){
+			str += i+" : "+this._pop[i].toStringGene()+" - "+this._pop[i].getFitness()  +"\n";
+		}
+		return str;
 	}
 
 }

@@ -21,7 +21,7 @@ public class CChrom {
 		
 		for(int i=0 ; i<numGene ; i++){
 			if(i == classIndex){
-				this._chromosome[i] = 0;
+				this._chromosome[i] = 1;
 			}else{
 				this._chromosome[i] = random.nextInt(2);
 			}
@@ -124,7 +124,11 @@ public class CChrom {
 	 * @param model	º¹»çµÉ ¸ðµ¨ °´Ã¼
 	 */
 	public void setModel(Model model) {
-		this._model = model.copy();
+		if(model == null){
+			this._model = null;
+		}else{
+			this._model = model.copy();
+		}
 	}
 
 

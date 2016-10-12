@@ -33,7 +33,7 @@ public class KNN implements Algorithm{
 			System.out.println("학습 시 오류......");
 		}
 		
-		System.out.println(this._nn.toString());
+//		System.out.println(this._nn.toString());
 		
 		int correct = 0;
 		int classIndex = data.classIndex();

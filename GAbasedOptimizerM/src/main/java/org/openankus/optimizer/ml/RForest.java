@@ -34,7 +34,7 @@ public class RForest implements Algorithm{
 			System.out.println("학습 시 오류......");
 		}
 		
-		System.out.println(this._forest.toString());
+//		System.out.println(this._forest.toString());
 		
 		int correct = 0;
 		int classIndex = data.classIndex();
