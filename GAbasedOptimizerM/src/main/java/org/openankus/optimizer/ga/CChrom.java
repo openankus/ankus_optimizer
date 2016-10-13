@@ -5,15 +5,15 @@ import org.openankus.optimizer.ml.Model;
 
 public class CChrom {
 
-	private int[]	_chromosome;		// °³Ã¼: ÀÌÁøÄÚµå·Î Ç¥Çö
-	private float	_fitness;			// ÀûÇÕµµ
-	private Model	_model;				// °³Ã¼¿¡ ÀÇÇØ »ı¼ºµÈ ¸ğµ¨
+	private int[]	_chromosome;		// ê°œì²´: ì´ì§„ì½”ë“œë¡œ í‘œí˜„
+	private float	_fitness;			// ì í•©ë„
+	private Model	_model;				// ê°œì²´ì— ì˜í•´ ìƒì„±ëœ ëª¨ë¸
 	
 	/**
-	 * »ı¼ºÀÚ
-	 * @param random	  ³­¼ö¹ß»ı °´Ã¼
-	 * @param numGene	  À¯ÀüÀÎÀÚ °³¼ö
-	 * @param classIndex Å¬·¡½º ÀÎµ¦½º
+	 * ìƒì„±ì
+	 * @param random	  ë‚œìˆ˜ë°œìƒ ê°ì²´
+	 * @param numGene	  ìœ ì „ì¸ì ê°œìˆ˜
+	 * @param classIndex í´ë˜ìŠ¤ ì¸ë±ìŠ¤
 	 */
 	public CChrom(Random random, int numGene, int classIndex) {
 		
@@ -29,9 +29,9 @@ public class CChrom {
 	}
 
 	/**
-	 * »ı¼ºÀÚ: °´Ã¼¸¦ º¹»çÇÒ ¶§ È°¿ë
-	 * @param chrom		º¹»çÇÒ °³Ã¼
-	 * @param fitness	º¹»çÇÒ °´Ã¼ 
+	 * ìƒì„±ì: ê°ì²´ë¥¼ ë³µì‚¬í•  ë•Œ í™œìš©
+	 * @param chrom		ë³µì‚¬í•  ê°œì²´
+	 * @param fitness	ë³µì‚¬í•  ê°ì²´ 
 	 */
 	public CChrom(CChrom original) {
 		
@@ -45,16 +45,16 @@ public class CChrom {
 	}
 
 	/**
-	 * °³Ã¼¸¦ ±¸¼ºÇÏ°í À¯ÀüÀÎÀÚ °³¼ö ¹İÈ¯ ÇÔ¼ö
-	 * ¿À·ù ½Ã ¿À·ùÄÚµå 00001 ¹ß»ı
-	 * @return À¯ÀüÀÎÀÚ °³¼ö
+	 * ê°œì²´ë¥¼ êµ¬ì„±í•˜ê³  ìœ ì „ì¸ì ê°œìˆ˜ ë°˜í™˜ í•¨ìˆ˜
+	 * ì˜¤ë¥˜ ì‹œ ì˜¤ë¥˜ì½”ë“œ 00001 ë°œìƒ
+	 * @return ìœ ì „ì¸ì ê°œìˆ˜
 	 */
 	public int getGeneSize() {
 		
 		int reVal = 0;
 		
 		if(this._chromosome == null){
-			System.out.println("¿À·ùÄÚµå 00001");
+			System.out.println("ì˜¤ë¥˜ì½”ë“œ 00001");
 			System.exit(1);
 		}else{
 			reVal = this._chromosome.length;
@@ -64,42 +64,42 @@ public class CChrom {
 	}
 
 	/**
-	 * °³Ã¼ÀÇ Æ¯Á¤ À¯ÀüÀÎÀÚ °ª ¹İÈ¯ ÇÔ¼ö
-	 * @param index		À¯ÀüÀÎÀÚ ÀÎµ¦½º (0ºÎÅÍ)
-	 * @return			ÇØ´ç À¯ÀüÀÎÀÚ °ª
+	 * ê°œì²´ì˜ íŠ¹ì • ìœ ì „ì¸ì ê°’ ë°˜í™˜ í•¨ìˆ˜
+	 * @param index		ìœ ì „ì¸ì ì¸ë±ìŠ¤ (0ë¶€í„°)
+	 * @return			í•´ë‹¹ ìœ ì „ì¸ì ê°’
 	 */
 	public int getGene(int index) {
 		return this._chromosome[index];
 	}
 	
 	/**
-	 * ÀûÇÕµµ ¼³Á¤ ÇÔ¼ö
-	 * @param fitness	ÀûÇÕµµ
+	 * ì í•©ë„ ì„¤ì • í•¨ìˆ˜
+	 * @param fitness	ì í•©ë„
 	 */
 	public void setFitness(float fitness) {
 		this._fitness = fitness;	
 	}
 	
 	/**
-	 * ÀûÇÕµµ ¹İÈ¯ ÇÔ¼ö
-	 * @return	ÀûÇÕµµ
+	 * ì í•©ë„ ë°˜í™˜ í•¨ìˆ˜
+	 * @return	ì í•©ë„
 	 */
 	public float getFitness(){
 		return this._fitness;
 	}
 
 	/**
-	 * À¯ÀüÀÎÀÚ °ª ¼³Á¤ ÇÔ¼ö
-	 * @param index	À¯ÀüÀÎÀÚ ÀÎµ¦½º
-	 * @param value	À¯ÀüÀÎÀÚ ¼³Á¤ °ª
+	 * ìœ ì „ì¸ì ê°’ ì„¤ì • í•¨ìˆ˜
+	 * @param index	ìœ ì „ì¸ì ì¸ë±ìŠ¤
+	 * @param value	ìœ ì „ì¸ì ì„¤ì • ê°’
 	 */
 	public void setGene(int index, int value) {
 		this._chromosome[index] = value;
 	}
 
 	/**
-	 * À¯ÀüÀÎÀÚ Ãâ·Â ÇÔ¼ö
-	 * @return	À¯ÀüÀÎÀÚ
+	 * ìœ ì „ì¸ì ì¶œë ¥ í•¨ìˆ˜
+	 * @return	ìœ ì „ì¸ì
 	 */
 	public String toStringGene() {
 		
@@ -113,15 +113,15 @@ public class CChrom {
 	}
 
 	/**
-	 * »ı¼ºµÈ ¸ğµ¨ Á¤º¸¸¦ Ãâ·ÂÇÏ´Â ÇÔ¼ö
+	 * ìƒì„±ëœ ëª¨ë¸ ì •ë³´ë¥¼ ì¶œë ¥í•˜ëŠ” í•¨ìˆ˜
 	 */
 	public void toStringModel() {
 		this._model.toSummaryString();
 	}
 
 	/**
-	 * ¸ğµ¨ °´Ã¼¸¦ º¹»çÇÏ´Â ÇÔ¼ö
-	 * @param model	º¹»çµÉ ¸ğµ¨ °´Ã¼
+	 * ëª¨ë¸ ê°ì²´ë¥¼ ë³µì‚¬í•˜ëŠ” í•¨ìˆ˜
+	 * @param model	ë³µì‚¬ë  ëª¨ë¸ ê°ì²´
 	 */
 	public void setModel(Model model) {
 		if(model == null){

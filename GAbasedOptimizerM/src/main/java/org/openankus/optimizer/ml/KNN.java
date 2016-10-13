@@ -7,12 +7,12 @@ import weka.core.Instances;
 
 public class KNN implements Algorithm{
 
-	public IBk _nn = null; 	// ÀÇ»ç°áÁ¤Æ®¸® °´Ã¼
-	public double _accuracy = -1; 		// ¸ğµ¨ÀÇ Á¤È®¼º
+	public IBk _nn = null; 	// ì˜ì‚¬ê²°ì •íŠ¸ë¦¬ ê°ì²´
+	public double _accuracy = -1; 		// ëª¨ë¸ì˜ ì •í™•ì„±
 	
 	@Override
 	/**
-	 * ÃÖ±ÙÁ¢ ÀÌ¿ô ¸ğµ¨ »ı¼º ¹× Æò°¡ ÇÔ¼ö
+	 * ìµœê·¼ì ‘ ì´ì›ƒ ëª¨ë¸ ìƒì„± ë° í‰ê°€ í•¨ìˆ˜
 	 */
 	public void method(Instances data, Parameter[] parameters) {
 		try {	
@@ -30,7 +30,7 @@ public class KNN implements Algorithm{
 			
 		} catch (Exception e) {
 			e.printStackTrace();
-			System.out.println("ÇĞ½À ½Ã ¿À·ù......");
+			System.out.println("í•™ìŠµ ì‹œ ì˜¤ë¥˜......");
 		}
 		
 //		System.out.println(this._nn.toString());
@@ -55,15 +55,15 @@ public class KNN implements Algorithm{
 	}
 	
 	/**
-	 * »ı¼ºµÈ ÀÇ»ç°áÁ¤Æ®¸®ÀÇ Á¤È®¼º ¹İÈ¯ ÇÔ¼ö
+	 * ìƒì„±ëœ ì˜ì‚¬ê²°ì •íŠ¸ë¦¬ì˜ ì •í™•ì„± ë°˜í™˜ í•¨ìˆ˜
 	 */
 	public double getAccuracy(){
 		return this._accuracy;
 	}
 	
 	/**
-	 * »ı»ıµÈ ÀÇ»ç°áÁ¤Æ®¸®·Î ÀÔ·Âµ¥ÀÌÅÍÀÇ ¹üÁÖ¸¦ ºĞ·ùÇÑ °á°ú °ª ¹İÈ¯ ÇÔ¼ö
-	 * (¹İÈ¯ °ªÀº Å¬·¡½ºÀÇ ÀÎµ¦½ºÀÓ)
+	 * ìƒìƒëœ ì˜ì‚¬ê²°ì •íŠ¸ë¦¬ë¡œ ì…ë ¥ë°ì´í„°ì˜ ë²”ì£¼ë¥¼ ë¶„ë¥˜í•œ ê²°ê³¼ ê°’ ë°˜í™˜ í•¨ìˆ˜
+	 * (ë°˜í™˜ ê°’ì€ í´ë˜ìŠ¤ì˜ ì¸ë±ìŠ¤ì„)
 	 */
 	public double classifyInstance(Instance inst){
 		
@@ -72,7 +72,7 @@ public class KNN implements Algorithm{
 		try {
 			retVal= this._nn.classifyInstance(inst);
 		} catch (Exception e) {
-			System.out.println("¿À·ù 00002");
+			System.out.println("ì˜¤ë¥˜ 00002");
 			e.printStackTrace();
 		}
 		
@@ -80,7 +80,7 @@ public class KNN implements Algorithm{
 	}
 	
 	/**
-	 * »ı¼ºµÈ ÀÇ»ç°áÁ¤Æ®¸® Á¤º¸ Ãâ·Â ÇÔ¼ö
+	 * ìƒì„±ëœ ì˜ì‚¬ê²°ì •íŠ¸ë¦¬ ì •ë³´ ì¶œë ¥ í•¨ìˆ˜
 	 */
 	public void toModelSummary(){
 		System.out.println(this._nn.toString());

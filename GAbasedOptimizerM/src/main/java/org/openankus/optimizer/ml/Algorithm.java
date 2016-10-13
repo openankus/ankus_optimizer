@@ -6,27 +6,27 @@ import weka.core.Instances;
 public interface Algorithm {
 	
 	/**
-	 * ¿¹Ãø¸ğµ¨ »ı¼ºÇÏ°í Æò°¡ÇÏ¿© Á¤È®¼ºÀ» »êÃâÇÏ´Â ÇÔ¼ö
-	 * @param data		ÀÔ·Âµ¥ÀÌÅÍ(¸ğµ¨À» »ı¼ºÇÒ ¶§ »ç¿ëµÇ´Â µ¥ÀÌÅÍ)
-	 * @param parameters	¼³Á¤µÈ ¾Ë°í¸®ÁòÀÇ È¯°æº¯¼ö °ª
+	 * ì˜ˆì¸¡ëª¨ë¸ ìƒì„±í•˜ê³  í‰ê°€í•˜ì—¬ ì •í™•ì„±ì„ ì‚°ì¶œí•˜ëŠ” í•¨ìˆ˜
+	 * @param data		ì…ë ¥ë°ì´í„°(ëª¨ë¸ì„ ìƒì„±í•  ë•Œ ì‚¬ìš©ë˜ëŠ” ë°ì´í„°)
+	 * @param parameters	ì„¤ì •ëœ ì•Œê³ ë¦¬ì¦˜ì˜ í™˜ê²½ë³€ìˆ˜ ê°’
 	 */
 	public abstract void method(Instances data, Parameter[] parameters);
 	
 	/**
-	 * ¿¹Ãø¸ğµ¨ÀÇ ºĞ·ù Á¤È®¼º ¹İÈ¯ ÇÔ¼ö
-	 * @return	ºĞ·ù Á¤È®¼º
+	 * ì˜ˆì¸¡ëª¨ë¸ì˜ ë¶„ë¥˜ ì •í™•ì„± ë°˜í™˜ í•¨ìˆ˜
+	 * @return	ë¶„ë¥˜ ì •í™•ì„±
 	 */
 	public abstract double getAccuracy();
 
 	/**
-	 * ÀÔ·Âµ¥ÀÌÅÍÀÇ ¹üÁÖ(Å¬·¡½º)¸¦ ¿¹ÃøÇÏ´Â ÇÔ¼ö
-	 * @param inst	ÀÔ·Âµ¥ÀÌÅÍ
-	 * @return	¿¹ÃøµÈ ¹üÁÖ(Å¬·¡½º)ÀÇ ÀÎµ¦½º
+	 * ì…ë ¥ë°ì´í„°ì˜ ë²”ì£¼(í´ë˜ìŠ¤)ë¥¼ ì˜ˆì¸¡í•˜ëŠ” í•¨ìˆ˜
+	 * @param inst	ì…ë ¥ë°ì´í„°
+	 * @return	ì˜ˆì¸¡ëœ ë²”ì£¼(í´ë˜ìŠ¤)ì˜ ì¸ë±ìŠ¤
 	 */
 	public abstract double classifyInstance(Instance inst);
 
 	/**
-	 * ¿¹Ãø¸ğµ¨ Á¤º¸ Ãâ·Â ÇÔ¼ö
+	 * ì˜ˆì¸¡ëª¨ë¸ ì •ë³´ ì¶œë ¥ í•¨ìˆ˜
 	 */
 	public abstract void toModelSummary();
 	

@@ -1,0 +1,11 @@
+eclipse.preferences.version=1
+encoding//src/main/java/org/openankus/optimizer/ga/CChrom.java=UTF-8
+encoding//src/main/java/org/openankus/optimizer/ga/CGA.java=UTF-8
+encoding//src/main/java/org/openankus/optimizer/ga/GAMain.java=UTF-8
+encoding//src/main/java/org/openankus/optimizer/ml/Algorithm.java=UTF-8
+encoding//src/main/java/org/openankus/optimizer/ml/DecisionTreeC45.java=UTF-8
+encoding//src/main/java/org/openankus/optimizer/ml/KNN.java=UTF-8
+encoding//src/main/java/org/openankus/optimizer/ml/MLP.java=UTF-8
+encoding//src/main/java/org/openankus/optimizer/ml/Model.java=UTF-8
+encoding//src/main/java/org/openankus/optimizer/ml/Parameter.java=UTF-8
+encoding//src/main/java/org/openankus/optimizer/ml/RForest.java=UTF-8

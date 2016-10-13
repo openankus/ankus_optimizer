@@ -5,12 +5,12 @@ import weka.core.Instance;
 import weka.core.Instances;
 
 public class RForest implements Algorithm{
-	public RandomForest _forest = null; 	// ·£´ı Æ÷·¹½ºÆ® ¾Ó»óºí °´Ã¼ »ı¼º
-	public double _accuracy = -1; 			// ¸ğµ¨ÀÇ Á¤È®¼º
+	public RandomForest _forest = null; 	// ëœë¤ í¬ë ˆìŠ¤íŠ¸ ì•™ìƒë¸” ê°ì²´ ìƒì„±
+	public double _accuracy = -1; 			// ëª¨ë¸ì˜ ì •í™•ì„±
 	
 	@Override
 	/**
-	 * RandomForest(¾Ó»óºí ¸ğµ¨) ¸ğµ¨ »ı¼º ¹× Æò°¡ ÇÔ¼ö
+	 * RandomForest(ì•™ìƒë¸” ëª¨ë¸) ëª¨ë¸ ìƒì„± ë° í‰ê°€ í•¨ìˆ˜
 	 */
 	public void method(Instances data, Parameter[] parameters) {
 		try {	
@@ -31,7 +31,7 @@ public class RForest implements Algorithm{
 			
 		} catch (Exception e) {
 			e.printStackTrace();
-			System.out.println("ÇĞ½À ½Ã ¿À·ù......");
+			System.out.println("í•™ìŠµ ì‹œ ì˜¤ë¥˜......");
 		}
 		
 //		System.out.println(this._forest.toString());
@@ -56,15 +56,15 @@ public class RForest implements Algorithm{
 	}
 	
 	/**
-	 * »ı¼ºµÈ RandomForest ¸ğµ¨ÀÇ Á¤È®¼º ¹İÈ¯ ÇÔ¼ö
+	 * ìƒì„±ëœ RandomForest ëª¨ë¸ì˜ ì •í™•ì„± ë°˜í™˜ í•¨ìˆ˜
 	 */
 	public double getAccuracy(){
 		return this._accuracy;
 	}
 	
 	/**
-	 * »ı»ıµÈ RandomForest ¸ğµ¨·Î ÀÔ·Âµ¥ÀÌÅÍÀÇ ¹üÁÖ¸¦ ºĞ·ùÇÑ °á°ú °ª ¹İÈ¯ ÇÔ¼ö
-	 * (¹İÈ¯ °ªÀº Å¬·¡½ºÀÇ ÀÎµ¦½ºÀÓ)
+	 * ìƒìƒëœ RandomForest ëª¨ë¸ë¡œ ì…ë ¥ë°ì´í„°ì˜ ë²”ì£¼ë¥¼ ë¶„ë¥˜í•œ ê²°ê³¼ ê°’ ë°˜í™˜ í•¨ìˆ˜
+	 * (ë°˜í™˜ ê°’ì€ í´ë˜ìŠ¤ì˜ ì¸ë±ìŠ¤ì„)
 	 */
 	public double classifyInstance(Instance inst){
 		
@@ -73,7 +73,7 @@ public class RForest implements Algorithm{
 		try {
 			retVal= this._forest.classifyInstance(inst);
 		} catch (Exception e) {
-			System.out.println("¿À·ù 00002");
+			System.out.println("ì˜¤ë¥˜ 00002");
 			e.printStackTrace();
 		}
 		
@@ -81,7 +81,7 @@ public class RForest implements Algorithm{
 	}
 	
 	/**
-	 * »ı¼ºµÈ RandomForest ¸ğµ¨ Á¤º¸ Ãâ·Â ÇÔ¼ö
+	 * ìƒì„±ëœ RandomForest ëª¨ë¸ ì •ë³´ ì¶œë ¥ í•¨ìˆ˜
 	 */
 	public void toModelSummary(){
 		System.out.println(this._forest.toString());

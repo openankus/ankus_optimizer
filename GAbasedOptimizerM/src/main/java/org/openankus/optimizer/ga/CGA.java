@@ -10,24 +10,24 @@ import weka.core.Instances;
 
 public class CGA {
 
-	private int 		_popSize;			// °³Ã¼Å©±â
-	private Random 		_random;			// ³­¼ö ¹ß»ı °´Ã¼
-	private float		_crossProb;			// ±³¹èÈ®·ü
-	private float		_mutProb;			// µ¹¿¬º¯ÀÌ È®·ü
-	private CChrom[]	_pop;				// °³Ã¼Áı´Ü
+	private int 		_popSize;			// ê°œì²´í¬ê¸°
+	private Random 		_random;			// ë‚œìˆ˜ ë°œìƒ ê°ì²´
+	private float		_crossProb;			// êµë°°í™•ë¥ 
+	private float		_mutProb;			// ëŒì—°ë³€ì´ í™•ë¥ 
+	private CChrom[]	_pop;				// ê°œì²´ì§‘ë‹¨
 	
-	private int 		_numAttri;			// ÀÔ·Âµ¥ÀÌÅÍ ¼Ó¼º °³¼ö
-	private int			_numAlgPara;		// ÃÖÀûÈ­½ÃÅ³ ¾Ë°í¸®Áò È¯°æº¯¼ö °³¼ö
-	private int 		_binaryStrSize;		// ÇÏ³ªÀÇ ½Ç¼ö °ªÀ» Ç¥ÇöÇÒ ÀÌÁøÄÚµå °³¼ö
-	private int[]		_mask;				// 10Áø¼ö¸¦ °è»êÇÏ±â À§ÇÑ ¸¶½ºÅ©
+	private int 		_numAttri;			// ì…ë ¥ë°ì´í„° ì†ì„± ê°œìˆ˜
+	private int			_numAlgPara;		// ìµœì í™”ì‹œí‚¬ ì•Œê³ ë¦¬ì¦˜ í™˜ê²½ë³€ìˆ˜ ê°œìˆ˜
+	private int 		_binaryStrSize;		// í•˜ë‚˜ì˜ ì‹¤ìˆ˜ ê°’ì„ í‘œí˜„í•  ì´ì§„ì½”ë“œ ê°œìˆ˜
+	private int[]		_mask;				// 10ì§„ìˆ˜ë¥¼ ê³„ì‚°í•˜ê¸° ìœ„í•œ ë§ˆìŠ¤í¬
 	
 	/**
-	 * À¯ÀüÀÚ¾Ë°í¸®Áò È¯°æº¯¼ö ¼³Á¤ ÇÔ¼ö
-	 * @param popSize	°³Ã¼Å©±â
-	 * @param maxGen	ÃÖ´ë ÁøÈ­È½¼ö
-	 * @param seed		·£´ı¾¾µå
-	 * @param crossProb	±³¹è È®·ü
-	 * @param mutProb	µ¹¿¬º¯ÀÌ È®·ü
+	 * ìœ ì „ìì•Œê³ ë¦¬ì¦˜ í™˜ê²½ë³€ìˆ˜ ì„¤ì • í•¨ìˆ˜
+	 * @param popSize	ê°œì²´í¬ê¸°
+	 * @param maxGen	ìµœëŒ€ ì§„í™”íšŸìˆ˜
+	 * @param seed		ëœë¤ì”¨ë“œ
+	 * @param crossProb	êµë°° í™•ë¥ 
+	 * @param mutProb	ëŒì—°ë³€ì´ í™•ë¥ 
 	 */
 	public void setParameters(int popSize, int seed, float crossProb, float mutProb) {
 		
@@ -39,15 +39,15 @@ public class CGA {
 	}
 
 	/**
-	 * ÃÊ±â °³Ã¼Áı´Ü »ı¼º ÇÔ¼ö
-	 * 2Áø¼ö¸¦ 10Áø¼ö·Î °è»êÇÏ±â À§ÇÑ ¸¶½ºÅ© ¼³Á¤
-	 * (Á¶°Ç: Àü¿ªº¯¼ö _popSize¿Í _randomÀÌ ¼³Á¤µÇ¾î ÀÖ¾î¾ß ÇÔ)
-	 * @param numAttri		ÀÔ·Â ¼Ó¼º °³¼ö
-	 * @param numAlgPara	¾Ë°í¸®Áò È¯°æº¯¼ö °³¼ö
-	 * @param binaryStrSize	ÀÌÁø¹®ÀÚ¿­ Å©±â (¸ğµç º¯¼ö°¡ µ¿ÀÏÇÑ Å©±â¸¦ °¡Áü)
-	 * @param min			¾Ë°í¸®Áò È¯°æº¯¼ö·Î ¼³Á¤µÉ ¼ö ÀÖ´Â ÃÖ¼Ò°ª
-	 * @param max			¾Ë°í¸®Áò È¯°æº¯¼ö·Î ¼³Á¤µÉ ¼ö ÀÖ´Â ÃÖ´ë°ª
-	 * @param classindex	Å¬·¡½º ÀÎµ¦½º
+	 * ì´ˆê¸° ê°œì²´ì§‘ë‹¨ ìƒì„± í•¨ìˆ˜
+	 * 2ì§„ìˆ˜ë¥¼ 10ì§„ìˆ˜ë¡œ ê³„ì‚°í•˜ê¸° ìœ„í•œ ë§ˆìŠ¤í¬ ì„¤ì •
+	 * (ì¡°ê±´: ì „ì—­ë³€ìˆ˜ _popSizeì™€ _randomì´ ì„¤ì •ë˜ì–´ ìˆì–´ì•¼ í•¨)
+	 * @param numAttri		ì…ë ¥ ì†ì„± ê°œìˆ˜
+	 * @param numAlgPara	ì•Œê³ ë¦¬ì¦˜ í™˜ê²½ë³€ìˆ˜ ê°œìˆ˜
+	 * @param binaryStrSize	ì´ì§„ë¬¸ìì—´ í¬ê¸° (ëª¨ë“  ë³€ìˆ˜ê°€ ë™ì¼í•œ í¬ê¸°ë¥¼ ê°€ì§)
+	 * @param min			ì•Œê³ ë¦¬ì¦˜ í™˜ê²½ë³€ìˆ˜ë¡œ ì„¤ì •ë  ìˆ˜ ìˆëŠ” ìµœì†Œê°’
+	 * @param max			ì•Œê³ ë¦¬ì¦˜ í™˜ê²½ë³€ìˆ˜ë¡œ ì„¤ì •ë  ìˆ˜ ìˆëŠ” ìµœëŒ€ê°’
+	 * @param classindex	í´ë˜ìŠ¤ ì¸ë±ìŠ¤
 	 */
 	public void setInitialPopulation(int numAttri, int numAlgPara, int binaryStrSize, int classIndex) {
 		
@@ -59,7 +59,7 @@ public class CGA {
 		
 		for(int i=0 ; i<this._popSize ; i++){
 			this._pop[i] = new CChrom(this._random, numAttri+(numAlgPara*binaryStrSize), classIndex);
-//			System.out.println(i+" °³Ã¼: "+ this._pop[i].toStringGene());
+//			System.out.println(i+" ê°œì²´: "+ this._pop[i].toStringGene());
 		}
 		
 		this._mask = new int [this._binaryStrSize];
@@ -70,8 +70,8 @@ public class CGA {
 
 
 	/**
-	 * °³Ã¼¼±ÅÃ ÇÔ¼ö
-	 * ¿¤¸®Æ¼½ºÆ® ¹æ¹ı + ·ê·¿ÈÙ ¹æ¹ı
+	 * ê°œì²´ì„ íƒ í•¨ìˆ˜
+	 * ì—˜ë¦¬í‹°ìŠ¤íŠ¸ ë°©ë²• + ë£°ë ›íœ  ë°©ë²•
 	 */
 	public void selectMethod() {
 		
@@ -118,8 +118,8 @@ public class CGA {
 	}
 
 	/**
-	 * ±³¹è¿¬»ê ÇÔ¼ö
-	 * ±³¹è¿¬»êÀ» Àû¿ë½ÃÅ³ ºÎ¸ğ°³Ã¼ ¼±ÅÃ
+	 * êµë°°ì—°ì‚° í•¨ìˆ˜
+	 * êµë°°ì—°ì‚°ì„ ì ìš©ì‹œí‚¬ ë¶€ëª¨ê°œì²´ ì„ íƒ
 	 */
 	public void crossover() {
 		
@@ -164,11 +164,11 @@ public class CGA {
 	
 
 	/**
-	 * ´ÙÁß ±³Á¡ ±³¹è¿©»êÀÚ
-	 * @param p1	ºÎ¸ğ°³Ã¼ 1
-	 * @param p2	ºÎ¸ğ°³Ã¼ 2
-	 * @param c1	ÀÚ½Ä°³Ã¼ 1
-	 * @param c2	ÀÚ½Ä°³Ã¼ 2
+	 * ë‹¤ì¤‘ êµì  êµë°°ì—¬ì‚°ì
+	 * @param p1	ë¶€ëª¨ê°œì²´ 1
+	 * @param p2	ë¶€ëª¨ê°œì²´ 2
+	 * @param c1	ìì‹ê°œì²´ 1
+	 * @param c2	ìì‹ê°œì²´ 2
 	 */
 	private void multiCrossover(CChrom p1, CChrom p2, CChrom c1, CChrom c2) {
 		
@@ -191,10 +191,10 @@ public class CGA {
 	}
 
 	/**
-	 * µ¹¿¬º¯ÀÌ ¿¬»ê: ±Õµî µ¹¿¬º¯ÀÌ ¿¬»ê
-	 * °¢ À¯ÀüÀÎÀÚ¿¡ ³­¼ö¸¦ ¹ß»ıÇÑ ÈÄ µ¹¿¬º¯ÀÌ È®·üº¸´Ù ÀÛÀ» °æ¿ì ÇØ´ç À¯ÀüÀÎÀÚ °ªÀ» º¯È¯½ÃÄÑ ÁÜ
-	 * Å¬·¡½º ÀÎµ¦½º¸¦ ³ªÅ¸³»´Â À¯ÀüÀÎÀÚ¿¡ ´ëÇØ¼­´Â µ¹¿¬º¯ÀÌ ¿¬»êÀ» Àû¿ë½ÃÅ°Áö ¾ÊÀ½
-	 * @param classIndex Å¬·¡½º ÀÎµ¦½º
+	 * ëŒì—°ë³€ì´ ì—°ì‚°: ê· ë“± ëŒì—°ë³€ì´ ì—°ì‚°
+	 * ê° ìœ ì „ì¸ìì— ë‚œìˆ˜ë¥¼ ë°œìƒí•œ í›„ ëŒì—°ë³€ì´ í™•ë¥ ë³´ë‹¤ ì‘ì„ ê²½ìš° í•´ë‹¹ ìœ ì „ì¸ì ê°’ì„ ë³€í™˜ì‹œì¼œ ì¤Œ
+	 * í´ë˜ìŠ¤ ì¸ë±ìŠ¤ë¥¼ ë‚˜íƒ€ë‚´ëŠ” ìœ ì „ì¸ìì— ëŒ€í•´ì„œëŠ” ëŒì—°ë³€ì´ ì—°ì‚°ì„ ì ìš©ì‹œí‚¤ì§€ ì•ŠìŒ
+	 * @param classIndex í´ë˜ìŠ¤ ì¸ë±ìŠ¤
 	 */
 	public void mutation(int classIndex) {
 		
@@ -215,8 +215,8 @@ public class CGA {
 	}
 
 	/**
-	 * °³Ã¼Áı´Ü¿¡¼­ °¡Àå ÀûÇÕµµ°¡ ³ôÀº °³Ã¼ ¹İÈ¯ ÇÔ¼ö
-	 * @return °³Ã¼
+	 * ê°œì²´ì§‘ë‹¨ì—ì„œ ê°€ì¥ ì í•©ë„ê°€ ë†’ì€ ê°œì²´ ë°˜í™˜ í•¨ìˆ˜
+	 * @return ê°œì²´
 	 */
 	public CChrom getelitist() {
 		
@@ -235,10 +235,10 @@ public class CGA {
 	}
 
 	/**
-	 * °³Ã¼ Æò°¡ ÇÔ¼ö
-	 * @param model		¿¹Ãø¸ğµ¨À» »ı¼ºÇÒ ¸ğµ¨ °´Ã¼
-	 * @param algorithm	¿¹Ãø¸ğµ¨À» »ı¼ºÇÒ ¾Ë°í¸®Áò °´Ã¼
-	 * @param parameters	¿¹Ãø¸ğµ¨À» »ı¼ºÇÒ ¾Ë°í¸®ÁòÀÇ È¯°æº¯¼ö ¼³Á¤ °ª
+	 * ê°œì²´ í‰ê°€ í•¨ìˆ˜
+	 * @param model		ì˜ˆì¸¡ëª¨ë¸ì„ ìƒì„±í•  ëª¨ë¸ ê°ì²´
+	 * @param algorithm	ì˜ˆì¸¡ëª¨ë¸ì„ ìƒì„±í•  ì•Œê³ ë¦¬ì¦˜ ê°ì²´
+	 * @param parameters	ì˜ˆì¸¡ëª¨ë¸ì„ ìƒì„±í•  ì•Œê³ ë¦¬ì¦˜ì˜ í™˜ê²½ë³€ìˆ˜ ì„¤ì • ê°’
 	 */
 	public void evaluation(Model model, Algorithm algorithm, Parameter[] parameters) {
 
@@ -253,7 +253,7 @@ public class CGA {
 			tempData = new Instances(model.getInstance());
 			val = new float [this._numAlgPara];
 			
-			// ¼Ó¼º¼±ÅÃ À¯¹«¸¦ Ç¥ÇöÇÏ´Â À¯ÀüÀÎÀÚ ÀÎÄÚµù	
+			// ì†ì„±ì„ íƒ ìœ ë¬´ë¥¼ í‘œí˜„í•˜ëŠ” ìœ ì „ì¸ì ì¸ì½”ë”©	
 			index = 0; 
 			usedAttriCount = 0;
 			for(int j=0 ; j<tempData.numAttributes() ; index++){
@@ -267,13 +267,13 @@ public class CGA {
 			
 			if(usedAttriCount == 1)
 			{
-//				System.out.println(i+ " °³Ã¼¿¡¼­  ¸ğµ¨ »ı¼º¿¡ »ç¿ëµÇ´Â ¼Ó¼º °³¼ö: "+usedAttriCount);
+//				System.out.println(i+ " ê°œì²´ì—ì„œ  ëª¨ë¸ ìƒì„±ì— ì‚¬ìš©ë˜ëŠ” ì†ì„± ê°œìˆ˜: "+usedAttriCount);
 //				System.exit(1);
 				this._pop[i].setFitness(0.0f);
 				this._pop[i].setModel(null);				
 			}else{
 			
-				// ¾Ë°í¸®Áò È¯°æº¯¼ö¸¦ Ç¥ÇöÇÏ´Â À¯ÀüÀÎÀÚ ÀÎÄÚµù
+				// ì•Œê³ ë¦¬ì¦˜ í™˜ê²½ë³€ìˆ˜ë¥¼ í‘œí˜„í•˜ëŠ” ìœ ì „ì¸ì ì¸ì½”ë”©
 				algParaCount = 0;
 				int numGene = this._numAttri+(this._numAlgPara * this._binaryStrSize);
 				for(int j=this._numAttri ; j < numGene  ; j=j+this._binaryStrSize){
@@ -289,7 +289,7 @@ public class CGA {
 					parameters[j].decoding(val[j], this._binaryStrSize);
 				}
 			
-				//¸ğµ¨ »ı¼º ¹× Æò°¡
+				//ëª¨ë¸ ìƒì„± ë° í‰ê°€
 				model.methodwData(algorithm,tempData,parameters);
 			
 				this._pop[i].setFitness((float)model.getAccuracy());
@@ -301,8 +301,8 @@ public class CGA {
 	}
 
 	/**
-	 * ÇöÀç °³Ã¼Áı´ÜÀ» ±¸¼ºÇÏ°í ÀÖ´Â °³Ã¼µéÀ» Ãâ·ÂÇÏ´Â ÇÔ¼ö
-	 * @return °´Ã¼°¡ Ç¥ÇöÇÏ°í ÀÖ´Â ÀÌÁø ½ºÆ®¸µ
+	 * í˜„ì¬ ê°œì²´ì§‘ë‹¨ì„ êµ¬ì„±í•˜ê³  ìˆëŠ” ê°œì²´ë“¤ì„ ì¶œë ¥í•˜ëŠ” í•¨ìˆ˜
+	 * @return ê°ì²´ê°€ í‘œí˜„í•˜ê³  ìˆëŠ” ì´ì§„ ìŠ¤íŠ¸ë§
 	 */
 	public String toStringChroms() {
 		

@@ -6,12 +6,12 @@ import weka.core.Instances;
 
 public class MLP implements Algorithm {
 
-	public MultilayerPerceptron _mlp = null; // ½Å°æ¸Á(´ÙÃşÆÛ¼ÁÆ®·Ğ)
-	public double _accuracy = -1; 	// »ı¼ºµÈ ¸ğµ¨ÀÇ Á¤È®¼º
+	public MultilayerPerceptron _mlp = null; // ì‹ ê²½ë§(ë‹¤ì¸µí¼ì…‰íŠ¸ë¡ )
+	public double _accuracy = -1; 	// ìƒì„±ëœ ëª¨ë¸ì˜ ì •í™•ì„±
 	
 	@Override
 	/**
-	 * ´ÙÃşÆÛ¼ÀÆ®·Ğ ¸ğµ¨ »ı¼º ¹× Æò°¡ ÇÔ¼ö
+	 * ë‹¤ì¸µí¼ì…ˆíŠ¸ë¡  ëª¨ë¸ ìƒì„± ë° í‰ê°€ í•¨ìˆ˜
 	 */
 	public void method(Instances data, Parameter[] parameters) {
 		
@@ -32,7 +32,7 @@ public class MLP implements Algorithm {
 				}
 			}
 			
-			this._mlp.buildClassifier(data);	// ¸ğµ¨ »ı¼º
+			this._mlp.buildClassifier(data);	// ëª¨ë¸ ìƒì„±
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -59,15 +59,15 @@ public class MLP implements Algorithm {
 	}
 	
 	/**
-	 * »ı¼ºµÈ ´ÙÃşÆÛ¼ÁÆ®·ĞÀÇ Á¤È®¼º ¹İÈ¯ ÇÔ¼ö
+	 * ìƒì„±ëœ ë‹¤ì¸µí¼ì…‰íŠ¸ë¡ ì˜ ì •í™•ì„± ë°˜í™˜ í•¨ìˆ˜
 	 */
 	public double getAccuracy(){
 		return this._accuracy;
 	}	
 	
 	/**
-	 * »ı»ıµÈ ´ÙÃşÆÛ¼ÁÆ®·ĞÀ¸·Î ÀÔ·Âµ¥ÀÌÅÍÀÇ ¹üÁÖ¸¦ ºĞ·ùÇÑ °á°ú °ª ¹İÈ¯ ÇÔ¼ö
-	 * (¹İÈ¯ °ªÀº Å¬·¡½ºÀÇ ÀÎµ¦½ºÀÓ)
+	 * ìƒìƒëœ ë‹¤ì¸µí¼ì…‰íŠ¸ë¡ ìœ¼ë¡œ ì…ë ¥ë°ì´í„°ì˜ ë²”ì£¼ë¥¼ ë¶„ë¥˜í•œ ê²°ê³¼ ê°’ ë°˜í™˜ í•¨ìˆ˜
+	 * (ë°˜í™˜ ê°’ì€ í´ë˜ìŠ¤ì˜ ì¸ë±ìŠ¤ì„)
 	 */
 	public double classifyInstance(Instance inst){
 		double retVal = -1.0;
@@ -75,7 +75,7 @@ public class MLP implements Algorithm {
 		try {
 			this._mlp.classifyInstance(inst);
 		} catch (Exception e) {
-			System.out.println("¿À·ù00003");
+			System.out.println("ì˜¤ë¥˜00003");
 			e.printStackTrace();
 		}
 		
@@ -83,7 +83,7 @@ public class MLP implements Algorithm {
 	}
 	
 	/**
-	 * »ı¼ºµÈ ´ÙÃşÆÛ¼ÁÆ®·Ğ Á¤º¸ Ãâ·Â ÇÔ¼ö
+	 * ìƒì„±ëœ ë‹¤ì¸µí¼ì…‰íŠ¸ë¡  ì •ë³´ ì¶œë ¥ í•¨ìˆ˜
 	 */
 	public void toModelSummary(){
 		System.out.println(this._mlp.toString());

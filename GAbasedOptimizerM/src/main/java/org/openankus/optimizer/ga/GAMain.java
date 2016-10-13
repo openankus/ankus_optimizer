@@ -20,14 +20,14 @@ public class GAMain {
 
 	public static void main(String[] args) throws Exception {
 		
-		//GA È¯°æº¯¼ö ¼³Á¤
-		//cmd ¿¹: -s 1 -p 10 -mG 3 -cp 0.9 -mp 0.5 -bs 5 -in D:/Programs/data/iris.arff
+		//GA í™˜ê²½ë³€ìˆ˜ ì„¤ì •
+		//cmd ì˜ˆ: -s 1 -p 10 -mG 3 -cp 0.9 -mp 0.5 -bs 5 -in D:/Programs/data/iris.arff
 		int 	seed = 10;
 		int 	popSize = 300;
 		int		maxGeneration = 500;
 		float 	crossProb = 0.9f;
 		float	mutProb = 0.5f;
-		int		binaryStrSize = 5;	// ÀÌÁø¹®ÀÚ¿­ Å©±â
+		int		binaryStrSize = 5;	// ì´ì§„ë¬¸ìì—´ í¬ê¸°
 		String  inputFile = "D:/Programs/data/nursery_shuffle.arff";
 		
 		String parname = "";
@@ -36,46 +36,46 @@ public class GAMain {
 				parname =arg;
 			}else{
 				if(parname.equals("-s")){
-					seed = Integer.parseInt(arg);			// ·»´ı¾¾µå
-					System.out.println("·£´ı¾¾µå: "+seed);
+					seed = Integer.parseInt(arg);			// ë Œë¤ì”¨ë“œ
+					System.out.println("ëœë¤ì”¨ë“œ: "+seed);
 				}else if(parname.equals("-p")){
-					popSize = Integer.parseInt(arg); 		// °³Ã¼Å©±â
-					System.out.println("°³Ã¼Å©±â: "+popSize);
+					popSize = Integer.parseInt(arg); 		// ê°œì²´í¬ê¸°
+					System.out.println("ê°œì²´í¬ê¸°: "+popSize);
 				}else if(parname.equals("-mG")){
-					maxGeneration = Integer.parseInt(arg); 	// ÃÖ´ë ¼¼´ë¼ö
-					System.out.println("ÃÖ´ë ¼¼´ë¼ö: "+maxGeneration);
+					maxGeneration = Integer.parseInt(arg); 	// ìµœëŒ€ ì„¸ëŒ€ìˆ˜
+					System.out.println("ìµœëŒ€ ì„¸ëŒ€ìˆ˜: "+maxGeneration);
 				}else if(parname.equals("-cp")){
-					crossProb = Float.parseFloat(arg);		// ±³¹èÈ®·ü
-					System.out.println("±³¹èÈ®·ü: "+crossProb);
+					crossProb = Float.parseFloat(arg);		// êµë°°í™•ë¥ 
+					System.out.println("êµë°°í™•ë¥ : "+crossProb);
 				}else if(parname.equals("-mp")){
-					mutProb = Float.parseFloat(arg);		// µ¹¿¬º¯ÀÌ È®·ü
-					System.out.println("µ¹¿¬º¯ÀÌ È®·ü: "+mutProb);
+					mutProb = Float.parseFloat(arg);		// ëŒì—°ë³€ì´ í™•ë¥ 
+					System.out.println("ëŒì—°ë³€ì´ í™•ë¥ : "+mutProb);
 				}else if(parname.equals("-bs")){
-					binaryStrSize = Integer.parseInt(arg);	// ÀÌÁø¹®ÀÚ¿­ Å©±â
-					System.out.println("ÀÌÁø¹®ÀÚ¿­ Å©±â: "+binaryStrSize);
+					binaryStrSize = Integer.parseInt(arg);	// ì´ì§„ë¬¸ìì—´ í¬ê¸°
+					System.out.println("ì´ì§„ë¬¸ìì—´ í¬ê¸°: "+binaryStrSize);
 				}else if(parname.equals("-in")){
-					inputFile = arg;						// ÀÔ·Âµ¥ÀÌÅÍ ÆÄÀÏ
-					System.out.println("ÀÔ·Âµ¥ÀÌÅÍ: "+inputFile);
+					inputFile = arg;						// ì…ë ¥ë°ì´í„° íŒŒì¼
+					System.out.println("ì…ë ¥ë°ì´í„°: "+inputFile);
 				}
 				parname = "";
 			}
 		}
 		
 		
-		// GA °´Ã¼ »ı¼º
+		// GA ê°ì²´ ìƒì„±
 		_ga = new CGA();
 		_ga.setParameters(popSize,seed,crossProb,mutProb);
 		
-		// ÃÊ±â °³Ã¼Áı´Ü »ı¼º
+		// ì´ˆê¸° ê°œì²´ì§‘ë‹¨ ìƒì„±
 		int 	numAttri;	
-		int		classIndex		= 8;		// ÀÔ·Âµ¥ÀÌÅÍ¿¡ ´ëÇÑ Å¬·¡½º ¼Ó¼º ¼³Á¤
+		int		classIndex		= 8;		// ì…ë ¥ë°ì´í„°ì— ëŒ€í•œ í´ë˜ìŠ¤ ì†ì„± ì„¤ì •
 		
-		// weka ÀÔ·Âµ¥ÀÌÅÍ ºÒ·¯¿È (arff ÆÄÀÏ)
+		// weka ì…ë ¥ë°ì´í„° ë¶ˆëŸ¬ì˜´ (arff íŒŒì¼)
 		BufferedReader reader = new BufferedReader(new FileReader(inputFile));
 		Instances data = new Instances(reader);
 		numAttri = data.numAttributes();
-		System.out.println("¼Ó¼º °³¼ö: "+numAttri);
-		System.out.println("µ¥ÀÌÅÍ °³¼ö: "+data.numInstances());
+		System.out.println("ì†ì„± ê°œìˆ˜: "+numAttri);
+		System.out.println("ë°ì´í„° ê°œìˆ˜: "+data.numInstances());
 
 		data.setClassIndex(classIndex);
 		
@@ -122,11 +122,11 @@ public class GAMain {
 			
 			Date startTime = new Date();
 			
-			// °³Ã¼ÃÊ±âÈ­
+			// ê°œì²´ì´ˆê¸°í™”
 			_ga.setInitialPopulation(numAttri,numAlgPara,binaryStrSize,classIndex);
-			//System.out.println("°³Ã¼ ÃÊ±âÈ­ ¿Ï·á...");
+			//System.out.println("ê°œì²´ ì´ˆê¸°í™” ì™„ë£Œ...");
 			
-			// °³Ã¼Æò°¡	
+			// ê°œì²´í‰ê°€	
 			_ga.evaluation(model,algorithm,_parameters);
 			//System.out.println(_ga.toStringChroms());
 			//System.out.println("----- elitist()");
@@ -134,31 +134,31 @@ public class GAMain {
 			//System.exit(1);
 
 			int generation = 0;
-			System.out.println(" ************************************ "+generation+" ¼¼´ë: "+_ga.getelitist().getFitness());
+			System.out.println(" ************************************ "+generation+" ì„¸ëŒ€: "+_ga.getelitist().getFitness());
 			//System.out.println(_ga.getelitist().toStringGene());
 			//System.exit(1);
 			
 			do{
-				// °³Ã¼¼±ÅÃ
+				// ê°œì²´ì„ íƒ
 				_ga.selectMethod();
-				//System.out.println("°³Ã¼ ¼±ÅÃ ¿Ï·á..");
+				//System.out.println("ê°œì²´ ì„ íƒ ì™„ë£Œ..");
 			
-				// ±³¹è È®·ü
+				// êµë°° í™•ë¥ 
 				_ga.crossover();
-				//System.out.println("°³Ã¼ ±³¹è ¿Ï·á..");
+				//System.out.println("ê°œì²´ êµë°° ì™„ë£Œ..");
 			
-				// µ¹¿¬º¯ÀÌ È®·ü
+				// ëŒì—°ë³€ì´ í™•ë¥ 
 				_ga.mutation(classIndex);
-				//System.out.println("°³Ã¼ µ¹¿¬º¯ÀÌ ¿Ï·á..");
+				//System.out.println("ê°œì²´ ëŒì—°ë³€ì´ ì™„ë£Œ..");
 				
-				// °³Ã¼Æò°¡
+				// ê°œì²´í‰ê°€
 				//System.out.println(_ga.toStringChroms());
 				_ga.evaluation(model,algorithm,_parameters);
-				//System.out.println("°³Ã¼Æò°¡ ¿Ï·á..");
+				//System.out.println("ê°œì²´í‰ê°€ ì™„ë£Œ..");
 
 				generation++;
 				
-				System.out.println(" ************************************ "+generation+" ¼¼´ë: "+_ga.getelitist().getFitness());
+				System.out.println(" ************************************ "+generation+" ì„¸ëŒ€: "+_ga.getelitist().getFitness());
 
 				if(generation == maxGeneration){
 					System.out.println(_ga.getelitist().toStringGene());
@@ -172,10 +172,10 @@ public class GAMain {
 			long lTime = (long) ((endTime.getTime() - startTime.getTime())/(60.0*1000.0));
 			System.out.println("Start Time: "+ startTime.toString());
 			System.out.println("End Time: "+endTime.toString());
-			System.out.println("TIME : " + lTime + "ºĞ");
+			System.out.println("TIME : " + lTime + "ë¶„");
 			
 		}else{
-			System.out.println("¿À·ù 00001");
+			System.out.println("ì˜¤ë¥˜ 00001");
 		}
 		
 	}

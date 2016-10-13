@@ -4,21 +4,21 @@ import weka.core.Instance;
 import weka.core.Instances;
 
 public class Model {
-	private Instances _Data = null;			// ÀÔ·Âµ¥ÀÌÅÍ
-	private Algorithm _algorithm = null;	// ¿¹Ãø¸ğµ¨À» »ı¼ºÁK ¾Ë°í¸®Áò °´Ã¼
+	private Instances _Data = null;			// ì…ë ¥ë°ì´í„°
+	private Algorithm _algorithm = null;	// ì˜ˆì¸¡ëª¨ë¸ì„ ìƒì„±í•³ ì•Œê³ ë¦¬ì¦˜ ê°ì²´
 
 	/**
-	 * »ı¼ºÀÚ
-	 * @param data	ÀÔ·Âµ¥ÀÌÅÍ
+	 * ìƒì„±ì
+	 * @param data	ì…ë ¥ë°ì´í„°
 	 */
 	public Model(Instances data){
 		this._Data = data;
 	}
 	
 	/**
-	 * »ı¼ºÀÚ
-	 * @param data	ÀÔ·Âµ¥ÀÌÅÍ
-	 * @param a		¿¹Ãø¸ğµ¨À» »ı¼ºÇÒ ¾Ë°í¸®Áò ÀÎÅÍÆäÀÌ½º
+	 * ìƒì„±ì
+	 * @param data	ì…ë ¥ë°ì´í„°
+	 * @param a		ì˜ˆì¸¡ëª¨ë¸ì„ ìƒì„±í•  ì•Œê³ ë¦¬ì¦˜ ì¸í„°í˜ì´ìŠ¤
 	 */
 	public Model(Instances data, Algorithm a){
 		this._Data = new Instances (data);
@@ -26,11 +26,11 @@ public class Model {
 	}
 	
 	/**
-	 * ÀÔ·Âµ¥ÀÌÅÍ·ÎºÎÅÍ ¼±ÅÃµÈ ¾Ë°í¸®ÁòÀ¸·Î ¼³Á¤µÈ È¯°æº¯¼ö ¹× ¼Ó¼º¼±ÅÃ ¿©ºÎ¸¦ °¡Áö°í
-	 * ¿¹Ãø¸ğµ¨À» »ı¼ºÇÏ°í Æò°¡ÇÏ´Â ÇÔ¼ö 
-	 * @param a		¾Ë°í¸®Áò ÀÎÅÍÆäÀÌ½º
-	 * @param data	ÀÔ·Âµ¥ÀÌÅÍ
-	 * @param parameters	¼Ó¼º¼±ÅÃ ¿©ºÎ ¹× ¾Ë°í¸®ÁòÀÇ È¯°æº¯¼ö ¼³Á¤ °ª
+	 * ì…ë ¥ë°ì´í„°ë¡œë¶€í„° ì„ íƒëœ ì•Œê³ ë¦¬ì¦˜ìœ¼ë¡œ ì„¤ì •ëœ í™˜ê²½ë³€ìˆ˜ ë° ì†ì„±ì„ íƒ ì—¬ë¶€ë¥¼ ê°€ì§€ê³ 
+	 * ì˜ˆì¸¡ëª¨ë¸ì„ ìƒì„±í•˜ê³  í‰ê°€í•˜ëŠ” í•¨ìˆ˜ 
+	 * @param a		ì•Œê³ ë¦¬ì¦˜ ì¸í„°í˜ì´ìŠ¤
+	 * @param data	ì…ë ¥ë°ì´í„°
+	 * @param parameters	ì†ì„±ì„ íƒ ì—¬ë¶€ ë° ì•Œê³ ë¦¬ì¦˜ì˜ í™˜ê²½ë³€ìˆ˜ ì„¤ì • ê°’
 	 */
 	public void methodwData(Algorithm a, Instances data, Parameter[] parameters){
 		this._algorithm = a;
@@ -38,40 +38,40 @@ public class Model {
 	}
 	
 	/**
-	 * »ı¼ºµÈ ¿¹Ãø¸ğµ¨ÀÇ Á¤È®¼º ¹İÈ¯ ÇÔ¼ö
-	 * @return	¿¹Ãø¸ğµ¨ÀÇ Á¤È®¼º
+	 * ìƒì„±ëœ ì˜ˆì¸¡ëª¨ë¸ì˜ ì •í™•ì„± ë°˜í™˜ í•¨ìˆ˜
+	 * @return	ì˜ˆì¸¡ëª¨ë¸ì˜ ì •í™•ì„±
 	 */
 	public double getAccuracy(){
 		return this._algorithm.getAccuracy();
 	}
 	
 	/**
-	 * ÀÔ·Âµ¥ÀÌÅÍ ¹İÈ£³ª ÇÔ¼ö
-	 * @return	ÀÔ·Âµ¥ÀÌÅÍ
+	 * ì…ë ¥ë°ì´í„° ë°˜í˜¸ë‚˜ í•¨ìˆ˜
+	 * @return	ì…ë ¥ë°ì´í„°
 	 */
 	public Instances getInstance(){
 		return this._Data;
 	}
 	
 	/**
-	 * ÀÔ·Â·¹°íµåÀ» ºĞ·ùÇÑ Å¬·¡½º ¾ÆÀÌµğ ¹İÈ¯
-	 * @param inst	ÀÔ·Â·¹ÄÚµå
-	 * @return	ºĞ·ùÇÑ Å¬·¡½º ¾ÆÀÌµğ
+	 * ì…ë ¥ë ˆê³ ë“œì„ ë¶„ë¥˜í•œ í´ë˜ìŠ¤ ì•„ì´ë”” ë°˜í™˜
+	 * @param inst	ì…ë ¥ë ˆì½”ë“œ
+	 * @return	ë¶„ë¥˜í•œ í´ë˜ìŠ¤ ì•„ì´ë””
 	 */
 	public double classifyInstance(Instance inst){
 		return this._algorithm.classifyInstance(inst);
 	}
 
 	/**
-	 * ¸ğµ¨ º¹»ç ÇÔ¼ö
-	 * @return	º¹»çµÈ ¸ğµ¨ 
+	 * ëª¨ë¸ ë³µì‚¬ í•¨ìˆ˜
+	 * @return	ë³µì‚¬ëœ ëª¨ë¸ 
 	 */
 	public Model copy() {
 		return new Model(this._Data, this._algorithm);
 	}
 
 	/**
-	 * »ı¼ºµÈ ¸ğµ¨Á¤º¸ Ãâ·Â ÇÔ¼ö
+	 * ìƒì„±ëœ ëª¨ë¸ì •ë³´ ì¶œë ¥ í•¨ìˆ˜
 	 */
 	public void toSummaryString() {
 		this._algorithm.toModelSummary();
