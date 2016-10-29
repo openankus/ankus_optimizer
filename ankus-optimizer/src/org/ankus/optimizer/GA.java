@@ -1,7 +1,24 @@
 package org.ankus.optimizer;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Hashtable;
+import java.util.List;
 import java.util.Random;
+
+import org.ankus.optimizer.exceoption.OptimizerException;
+import org.ankus.optimizer.util.Constants;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FSDataInputStream;
+import org.apache.hadoop.fs.FSDataOutputStream;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 
@@ -15,6 +32,9 @@ import java.util.Random;
  *
  */
 public class GA {
+	
+	private Logger logger = LoggerFactory.getLogger(GA.class);
+	
 
 	private int 		popSize;			// 개체크기
 	private Random 		random;				// 난수 발생 객체
@@ -27,6 +47,42 @@ public class GA {
 	private int 		binaryStrSize;		// 하나의 실수 값을 표현할 이진코드 개수
 	private int[]		mask;				// 10진수를 계산하기 위한 마스크
 	
+	
+	
+	
+	public int getPopSize() {
+		return popSize;
+	}
+
+	public float getCrossProb() {
+		return crossProb;
+	}
+
+	public float getMutProb() {
+		return mutProb;
+	}
+
+	public Chrom[] getPop() {
+		return pop;
+	}
+
+	public int getNumAttri() {
+		return numAttri;
+	}
+
+	public int getNumAlgPara() {
+		return numAlgPara;
+	}
+
+	public int getBinaryStrSize() {
+		return binaryStrSize;
+	}
+
+	public int[] getMask() {
+		return mask;
+	}
+	
+
 	/**
 	 * 유전자알고리즘 환경변수 설정 함수
 	 * @param popSize	개체크기
@@ -240,40 +296,186 @@ public class GA {
 		return this.pop[max];
 	}
 
+//	/**
+//	 * 개체 평가 함수
+//	 * @param model		예측모델을 생성할 모델 객체
+//	 * @param algorithm	예측모델을 생성할 알고리즘 객체
+//	 * @param parameters	예측모델을 생성할 알고리즘의 환경변수 설정 값
+//	 * @param outputBase	평가결과 출력파일들을 담는 디렉터리 경로
+//	 * @return 생성된 개체모델 정보들을 담는 파일의 경로 
+//	 */
+//	public String evaluation(Model model, Algorithm algorithm, Parameter[] parameters, String outputBase) throws OptimizerException{
+//
+//		float[] val;
+//		int index;
+//		int usedAttriCount;
+//		int algParaCount;
+//		Instances tempData;
+//		
+//		//	생성된 모델들의 정보를 담는 파일(개체 인덱스 오름차순)
+//		String popInfoAllPath = outputBase+"/"+Constants.FILE_NAME_POP_INFO_LIST;
+//		
+//		for(int i=0 ; i<this.popSize ; i++){
+//			
+//			tempData = new Instances(model.getInstances());
+//			val = new float [this.numAlgPara];
+//			
+//			// 속성선택 유무를 표현하는 유전인자 인코딩	
+//			index = 0; 
+//			usedAttriCount = 0;
+////			for(int j=0 ; j<tempData.numAttributes() ; index++){
+////				if(this.pop[i].getGene(index)==0){
+////					tempData.deleteAttributeAt(j);
+////				}else{
+////					j++;
+////					usedAttriCount++;
+////				}
+////			}
+//			for (int idx = tempData.getSizeOfAttributeIndexList() ; idx >=0 ; idx--){
+//				if (this.pop[i].getGene(idx) == 0){
+//					tempData.deleteAttributeIndexAt(idx);
+//				}else{
+//					usedAttriCount++;
+//				}
+//			}
+//			
+//			if(usedAttriCount == 1)
+//			{
+////				System.out.println(i+ " 개체에서  모델 생성에 사용되는 속성 개수: "+usedAttriCount);
+////				System.exit(1);
+//				this.pop[i].setFitness(0.0f);
+//				this.pop[i].setModel(null);				
+//			}else{
+//			
+//				// 알고리즘 환경변수를 표현하는 유전인자 인코딩
+//				algParaCount = 0;
+//				int numGene = this.numAttri+(this.numAlgPara * this.binaryStrSize);
+//				for(int j=this.numAttri ; j < numGene  ; j=j+this.binaryStrSize){
+//					index = 0;
+//					for(int k = j ; index<this.binaryStrSize ; index++, k++){
+//						val[algParaCount] += this.pop[i].getGene(k)*this.mask[index];
+//					}
+//					algParaCount++;
+//				}
+//
+//
+//				for(int j=0 ; j<parameters.length ; j++){
+//					if (parameters[j] instanceof ParameterInt){
+//						ParameterInt param = (ParameterInt)parameters[j];
+//						param.decoding((int)val[j], this.binaryStrSize);
+//					}else if (parameters[j] instanceof ParameterFloat){
+//						ParameterFloat param = (ParameterFloat)parameters[j];
+//						param.decoding(val[j], this.binaryStrSize);
+//					}
+//				}
+//			
+//				//모델 생성 및 평가
+//				String popOutputBase = outputBase+"/pop_"+String.format("%05d", i);
+//				model.methodData(algorithm,tempData,parameters, popOutputBase);
+//			
+//				this.pop[i].setFitness((float)model.getAccuracy());
+//				this.pop[i].setModel(model);
+//
+//				
+//				// 생성된 모델 및 평가 출력 (개체 단위 출력)
+//				try{
+//					//	출력 스트림 열기
+//					Path outputPath = new Path(popInfoAllPath);
+//					FileSystem fs = FileSystem.get(new Configuration());
+//					FSDataOutputStream out = null;
+//					if (fs.exists(outputPath)){
+//						out = fs.append(outputPath);
+//					}else{
+//						out = fs.create(outputPath);
+//					}
+//					
+//					//	개체표현(염색체 기반 표시)
+//					out.write(this.pop[i].toStringGene().getBytes());
+//					out.write(Constants.DELIMITER_GA.getBytes());
+//					//	적합도 표시
+//					out.write(String.format("%.10f", this.pop[i].getFitness()).getBytes());
+//					out.write(Constants.DELIMITER_GA.getBytes());
+//					//	환경변수 설정값
+//					for (int idx=0; idx < parameters.length ; idx++){
+//						StringBuffer sb = new StringBuffer();
+//						sb.append("param["+ parameters[idx].getName() +"]");
+//						sb.append("=");
+//						sb.append(parameters[idx].getValueString());
+//						if (idx < parameters.length - 1)
+//							sb.append(Constants.DELIMITER_GA_PARAM);
+//						out.write(sb.toString().getBytes());
+//					}
+//					out.write(Constants.DELIMITER_GA.getBytes());
+//					//	선택된 입력속성
+//					{
+//						StringBuffer sb = new StringBuffer();
+//						sb.append("attributes=");
+//						int sizeAttr = tempData.getSizeOfAttributeIndexList();
+//						for (int idx=0; idx < sizeAttr ; idx++){
+//							sb.append(tempData.getAttributeIndexAt(idx));
+//							if (idx < sizeAttr-1)
+//								sb.append(Constants.DELIMITER_GA_VALUE);
+//						}
+//						out.write(sb.toString().getBytes());
+//					}
+//					out.write("\n".getBytes());
+//					out.close();
+//					
+//				}catch(IOException ex){
+//					throw new OptimizerException("생성된 모델 및 평가 출력 중 에러 발생...", ex);
+//				}
+//				
+//
+//			}
+//			
+//		}		
+//		
+//		return popInfoAllPath;
+//		
+//	}
+	
+	
+
 	/**
 	 * 개체 평가 함수
 	 * @param model		예측모델을 생성할 모델 객체
 	 * @param algorithm	예측모델을 생성할 알고리즘 객체
 	 * @param parameters	예측모델을 생성할 알고리즘의 환경변수 설정 값
 	 * @param outputBase	평가결과 출력파일들을 담는 디렉터리 경로
+	 * @return 생성된 개체모델 정보들을 담는 파일의 경로 
 	 */
-	public void evaluation(Model model, Algorithm algorithm, Parameter[] parameters, String outputBase) {
-
+	public String evaluation(Model model, AlgorithmProcessExec algorithm, Parameter[] parameters, String outputBase) throws OptimizerException{
+		
 		float[] val;
 		int index;
 		int usedAttriCount;
 		int algParaCount;
 		Instances tempData;
+		Instances tempTrainData;
+		Instances tempTestData;
 		
-		for(int i=0 ; i<this.popSize ; i++){
+		//	생성된 모델들의 정보를 담는 파일의 경로(개체 인덱스 오름차순)
+		String popInfoAllPath = outputBase+"/"+Constants.FILE_NAME_POP_INFO_LIST;
+		
+		// 알고리즘 모델(개체) 평가항목 목록 
+		List<AlgorithmModelEvalThread> evalItemList = new ArrayList<AlgorithmModelEvalThread>();
+		
+		
+		for(int i=0 ; i<this.getPopSize() ; i++){
 			
 			tempData = new Instances(model.getInstances());
+			tempTrainData = new Instances(model.getTrainData());
+			tempTestData = new Instances(model.getTestData());
 			val = new float [this.numAlgPara];
 			
 			// 속성선택 유무를 표현하는 유전인자 인코딩	
 			index = 0; 
 			usedAttriCount = 0;
-//			for(int j=0 ; j<tempData.numAttributes() ; index++){
-//				if(this.pop[i].getGene(index)==0){
-//					tempData.deleteAttributeAt(j);
-//				}else{
-//					j++;
-//					usedAttriCount++;
-//				}
-//			}
 			for (int idx = tempData.getSizeOfAttributeIndexList() ; idx >=0 ; idx--){
 				if (this.pop[i].getGene(idx) == 0){
 					tempData.deleteAttributeIndexAt(idx);
+					tempTrainData.deleteAttributeIndexAt(idx);
+					tempTestData.deleteAttributeIndexAt(idx);
 				}else{
 					usedAttriCount++;
 				}
@@ -281,15 +483,13 @@ public class GA {
 			
 			if(usedAttriCount == 1)
 			{
-//				System.out.println(i+ " 개체에서  모델 생성에 사용되는 속성 개수: "+usedAttriCount);
-//				System.exit(1);
 				this.pop[i].setFitness(0.0f);
 				this.pop[i].setModel(null);				
 			}else{
 			
 				// 알고리즘 환경변수를 표현하는 유전인자 인코딩
 				algParaCount = 0;
-				int numGene = this.numAttri+(this.numAlgPara * this.binaryStrSize);
+				int numGene = this.getNumAttri()+(this.numAlgPara * this.binaryStrSize);
 				for(int j=this.numAttri ; j < numGene  ; j=j+this.binaryStrSize){
 					index = 0;
 					for(int k = j ; index<this.binaryStrSize ; index++, k++){
@@ -300,21 +500,118 @@ public class GA {
 
 
 				for(int j=0 ; j<parameters.length ; j++){
-					parameters[j].decoding(val[j], this.binaryStrSize);
+					if (parameters[j] instanceof ParameterInt){
+						ParameterInt param = (ParameterInt)parameters[j];
+						param.decoding((int)val[j], this.binaryStrSize);
+					}else if (parameters[j] instanceof ParameterFloat){
+						ParameterFloat param = (ParameterFloat)parameters[j];
+						param.decoding(val[j], this.binaryStrSize);
+					}
 				}
+				
+				
+				//	개체평가 출력결과 디렉토리
+				String popOutputBase = outputBase+"/pop_"+String.format("%05d", i);
+				
+//				//	개체 출력
+//				System.out.printf("pop[%d] parameters before call: ",i);
+//				for (Parameter param : parameters){
+//					System.out.printf("param[%s]=%s, ", param.getName(), param.getValueString());
+//				}
+//				System.out.println("");
 			
-				//모델 생성 및 평가
-				outputBase += "/pop_"+String.format("%05d", i);
-				model.methodData(algorithm,tempData,parameters, outputBase);
-			
-				this.pop[i].setFitness((float)model.getAccuracy());
-				this.pop[i].setModel(model);
+				
+				//	알고리즘 평가항목 추가
+				AlgorithmModelEvalThread algorithmEvalThread = 
+						new AlgorithmModelEvalThread(
+								popOutputBase
+								, model
+								, algorithm
+								, tempData
+								, tempTrainData
+								, tempTestData
+								, parameters
+								, this
+								, i
+								, popInfoAllPath);
+				evalItemList.add(algorithmEvalThread);
+
 			}
-			
 		}		
+		
+		//	알고리즘 평가항목 목록 수행
+		run(evalItemList);
+		
+		
+		return popInfoAllPath;
 		
 	}
 
+	
+	
+	
+	/**
+	 * 알고리즘 모델 평가 스레드 목록 실행
+	 * 
+	 * @param evalThreadList 실행할 알고리즘 모델 평가 스레드 목록
+	 * @throws OptimizerException
+	 */
+	private void run(List<AlgorithmModelEvalThread> evalThreadList) throws OptimizerException{
+
+		
+		System.out.println("==== 알고리즘 모델 평가 스레드 실행 요청!!!");
+		
+		
+		//	쓰레드 실행 완료 체크주기(초)
+		int checkIntervalSec = 2;
+		
+		List<AlgorithmModelEvalThread> runningThreadList = 
+				new ArrayList<AlgorithmModelEvalThread>(evalThreadList);
+		
+		//	알고리즘 평가 스레드 목록 실행
+		for (AlgorithmModelEvalThread runningEvalThread : runningThreadList){
+			runningEvalThread.start();
+		}
+		
+		
+		
+		
+		
+		//	알고리즘 평가 스레드 실행 상태 확인
+		try{
+			
+			while (runningThreadList.size() > 0){
+				
+				//	평가완료한 스레드목록 추출
+				for (int idx=runningThreadList.size()-1; idx >= 0; idx--){
+					AlgorithmModelEvalThread thread = runningThreadList.get(idx);
+					if (AlgorithmModelEvalThread.STATE_COMPLETED.equals(thread.getEvalState())){
+						System.out.printf("알고리즘 모델[popIndex=%d] 평가 완료....\n", thread.getPopIndex());
+						runningThreadList.remove(idx);
+					}
+				}
+				
+				//	부하방지를 위한 main thread의 sleep 수행
+				Thread.sleep(checkIntervalSec * 1000);
+			}
+			
+			System.out.println("==== 알고리즘 모델 평가 스레드 실행 완료!!!");
+			
+		}catch(InterruptedException ex){
+			throw new OptimizerException("평가 실행 중 에러발생", ex);
+		}
+		
+	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	/**
 	 * 현재 개체집단을 구성하고 있는 개체들을 출력하는 함수
 	 * @return 객체가 표현하고 있는 이진 스트링
@@ -328,6 +625,71 @@ public class GA {
 		}
 		return str;
 	}
+	
+	
+	/**
+	 * 개체정보들을 적합도 내림차순으로 정렬
+	 * 
+	 * @param popInfoListPath 개체정보들을 담은 목록 파일
+	 * @param outputPath	출력파일경로
+	 */
+	public void writeSortedPopInfoList(String popInfoListPath, String outputPath) throws OptimizerException{
+
+		//	전체 요약정보 파일 생성
+		try{
+			
+			//	생성된 모델들의 정보를 담는 파일	
+			ArrayList<String> popInfoList = new ArrayList<String>();
+			FileSystem fs = FileSystem.get(new Configuration());
+			FSDataInputStream in = fs.open(new Path(popInfoListPath));
+			InputStreamReader isr = new InputStreamReader(in);
+			BufferedReader br = new BufferedReader(isr);
+			String rl= null;
+			while ((rl = br.readLine()) != null){
+				popInfoList.add(rl);
+			}
+			br.close();
+			isr.close();
+			in.close();
+			
+			//	생성된 모델 정보 정렬(적합도 내림차순)
+			Collections.sort(popInfoList, new Comparator<String>() {
+				@Override
+				public int compare(String o1, String o2) {
+					String[] splits1 = o1.split(Constants.DELIMITER_GA);
+					String[] splits2 = o2.split(Constants.DELIMITER_GA);
+					float fitness1 = Float.parseFloat(splits1[1]);
+					float fitness2 = Float.parseFloat(splits2[1]);
+					
+					int retVal = 0;
+					if (fitness1 > fitness2){
+						retVal = -1;
+					}else if (fitness1 == fitness2){
+						retVal = 0;
+					}else{
+						retVal = 1;
+					}
+					return retVal;
+				}
+			});
+			
+			// 정렬된 정보 출력
+			FSDataOutputStream out = fs.create(new Path(outputPath));
+			//	전체 목록 출력
+			for (String popInfo : popInfoList){
+				out.write(popInfo.getBytes());
+				out.write("\n".getBytes());
+			}
+			out.close();
+			
+		}catch(IOException ex){
+			throw new OptimizerException("생성된 모델 및 평가 출력 중 에러 발생...", ex);
+		}
+		
+	}
+	
+
+	
 
 
 }

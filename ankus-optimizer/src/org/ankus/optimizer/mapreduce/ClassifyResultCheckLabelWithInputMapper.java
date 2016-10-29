@@ -1,4 +1,4 @@
-package org.ankus.optimizer;
+package org.ankus.optimizer.mapreduce;
 
 import java.io.IOException;
 import java.util.StringTokenizer;
@@ -20,10 +20,10 @@ import org.slf4j.LoggerFactory;
  * @author JungHo Kim
  *
  */
-public class CheckClassResultMapper extends Mapper<LongWritable, Text, Text, LongWritable>{
+public class ClassifyResultCheckLabelWithInputMapper extends Mapper<LongWritable, Text, Text, LongWritable>{
 	
 
-	private Logger logger = LoggerFactory.getLogger(CheckClassResultMapper.class);
+	private Logger logger = LoggerFactory.getLogger(ClassifyResultCheckLabelWithInputMapper.class);
 	
 	
 	/**
@@ -72,10 +72,10 @@ public class CheckClassResultMapper extends Mapper<LongWritable, Text, Text, Lon
 		}
 		
 		if (factValue.equals(estimateValue)){
-			interOutputKey.set(CheckClassResultMapper.OUTPUT_KEY_CORRECT);
+			interOutputKey.set(ClassifyResultCheckLabelWithInputMapper.OUTPUT_KEY_CORRECT);
 			context.write(interOutputKey, interOutputValue);
 		}else{
-			interOutputKey.set(CheckClassResultMapper.OUTPUT_KEY_INCORRECT);
+			interOutputKey.set(ClassifyResultCheckLabelWithInputMapper.OUTPUT_KEY_INCORRECT);
 			context.write(interOutputKey, interOutputValue);
 		}
 		

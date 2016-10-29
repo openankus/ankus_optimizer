@@ -1,4 +1,4 @@
-package org.ankus.optimizer;
+package org.ankus.optimizer.mapreduce;
 
 import java.io.IOException;
 
@@ -16,7 +16,7 @@ import org.apache.hadoop.mapreduce.Reducer;
  * @author JungHo Kim
  *
  */
-public class CheckClassResultReducer extends Reducer<Text, LongWritable, Text, LongWritable>{
+public class ClassifyResultCheckLabelWithInputReducer extends Reducer<Text, LongWritable, Text, LongWritable>{
 	
 	private Text outputKey = new Text();
 	private LongWritable outputValue = new LongWritable();

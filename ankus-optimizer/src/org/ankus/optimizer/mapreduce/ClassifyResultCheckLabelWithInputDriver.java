@@ -1,4 +1,4 @@
-package org.ankus.optimizer;
+package org.ankus.optimizer.mapreduce;
 
 import org.ankus.optimizer.util.ArgumentsConstants;
 import org.ankus.optimizer.util.ConfigurationVariable;
@@ -26,9 +26,9 @@ import org.slf4j.LoggerFactory;
  * @author JungHo Kim
  *
  */
-public class CheckClassResultDriver extends Configured implements Tool {
+public class ClassifyResultCheckLabelWithInputDriver extends Configured implements Tool {
 	
-    private Logger logger = LoggerFactory.getLogger(CheckClassResultDriver.class);
+    private Logger logger = LoggerFactory.getLogger(ClassifyResultCheckLabelWithInputDriver.class);
 	
 	@Override
 	public int run(String[] args) throws Exception {
@@ -45,7 +45,7 @@ public class CheckClassResultDriver extends Configured implements Tool {
 		
 		
 	    // Job 이름 설정
-	    Job job = new Job(conf, CheckClassResultDriver.class.getName());
+	    Job job = new Job(conf, ClassifyResultCheckLabelWithInputDriver.class.getName());
 	    
 	    // 입출력 데이터 경로 설정
 	    Path inputFilePath = new Path(conf.get(ArgumentsConstants.INPUT_PATH));
@@ -62,11 +62,11 @@ public class CheckClassResultDriver extends Configured implements Tool {
 	    }
 
 	    // Job 클래스 설정
-	    job.setJarByClass(CheckClassResultDriver.class);
+	    job.setJarByClass(ClassifyResultCheckLabelWithInputDriver.class);
 	    // Mapper 클래스 설정
-	    job.setMapperClass(CheckClassResultMapper.class);
+	    job.setMapperClass(ClassifyResultCheckLabelWithInputMapper.class);
 	    // Reducer 클래스 설정
-	    job.setReducerClass(CheckClassResultReducer.class);
+	    job.setReducerClass(ClassifyResultCheckLabelWithInputReducer.class);
 //		// 정렬 순서 설정
 //	    job.setSortComparatorClass(TextKeyDescComparator.class);
 	    

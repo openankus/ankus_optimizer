@@ -1,7 +1,7 @@
 package org.ankus.optimizer;
 
 /**
- * 분석알고리즘 환경 변수 설정정보
+ * 분석알고리즘 환경변수 설정정보
  *
  * @description
  * @version 0.1
@@ -9,29 +9,43 @@ package org.ankus.optimizer;
  * @author JungHo Kim
  *
  */
-public class Parameter {
+public abstract class Parameter{
 	
-	private String 	_name;
-	private float	_value;
-	private float	_minVal;
-	private float	_maxVal;
+	/**
+	 * 환경변수 이름
+	 */
+	protected String 	name;
 	
-	public Parameter(String name, float minVal, float maxVal){
-		this._name = name;
-		this._minVal = minVal;
-		this._maxVal = maxVal;
+	/**
+	 * 생성자
+	 * 
+	 * @param name 환경변수 이름
+	 */
+	protected Parameter(String name){
+		this.name = name;
 	}
 	
-	public void decoding(float decimal,int binaryStrSize){
-		this._value = ((decimal*(this._maxVal-this._minVal))/((float)Math.pow(2.0, (double)binaryStrSize)-1.0f))+(float)this._minVal;
-	}
-	
-	public float getValue(){
-		return this._value;
-	}
 
-	public String getName() {
-		return this._name;
+	/**
+	 * 환경변수 이름
+	 * 
+	 * @return
+	 */
+	protected String getName() {
+		return this.name;
 	}
 	
+	/**
+	 * 환경변수의 값을 문자열 형태로 반환
+	 * 
+	 * @return 환경변수값을 문자열
+	 */
+	abstract String getValueString();
+	
+	/**
+	 * 해당 파라메터의 자료형
+
+	 * @return 자료형 문자열
+	 */
+	abstract String getDataType();
 }
