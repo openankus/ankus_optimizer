@@ -61,24 +61,15 @@
 					<target>1.7</target>
 				</configuration>
 			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-dependency-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>copy</id>
-						<phase>install</phase>
-						<goals>
-							<goal>copy-dependencies</goal>
-						</goals>
-						<configuration>
-							<outputDirectory>
-								${project.build.directory}/lib
-							</outputDirectory>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
+            <plugin>  
+				<groupId>org.apache.maven.plugins</groupId>  
+				<artifactId>maven-assembly-plugin</artifactId>  
+				<configuration>  
+					<descriptorRefs>  
+						<descriptorRef>jar-with-dependencies</descriptorRef>  
+					</descriptorRefs>  
+				</configuration>  
+			</plugin>  
 
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -89,8 +80,6 @@
 					<archive>
 						<manifest>
 							<mainClass>org.ankus.app.App</mainClass>
-							<addClasspath>true</addClasspath>
-							<classpathPrefix>lib/</classpathPrefix>
 						</manifest>
 					</archive>
 				</configuration>

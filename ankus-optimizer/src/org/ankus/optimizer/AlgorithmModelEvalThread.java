@@ -158,11 +158,11 @@ public class AlgorithmModelEvalThread extends Thread{
 		
 		try{
 			
-//			System.out.printf(">pop[%d] parameters after call: ",popIndex);
+//			OptimizerLogger.printf(">pop[%d] parameters after call: ",popIndex);
 //			for (Parameter param : parameters){
-//				System.out.printf("param[%s]=%s, ", param.getName(), param.getValueString());
+//				OptimizerLogger.printf("param[%s]=%s, ", param.getName(), param.getValueString());
 //			}
-//			System.out.println("");
+//			OptimizerLogger.println("");
 			
 			// 모델 생성 및 평가
 			evaluateModel();
@@ -250,7 +250,7 @@ public class AlgorithmModelEvalThread extends Thread{
 			out.close();
 			
 		}catch(IOException ex){
-			throw new OptimizerException("생성된 모델 및 평가 출력 중 에러 발생...", ex);
+			throw new OptimizerException("Fail to evaluate a model!!!", ex);
 		}
 		
 	}

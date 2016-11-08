@@ -1,19 +1,25 @@
 package org.ankus.app;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.StringTokenizer;
 
 import org.ankus.optimizer.GAMain;
 import org.ankus.poolmgr.AlgorithmInfo;
-import org.ankus.poolmgr.DataInfo;
 import org.ankus.poolmgr.OptimizerConfigInfo;
 import org.ankus.poolmgr.ManagerData;
 import org.ankus.poolmgr.ParamInfo;
 import org.ankus.poolmgr.PoolInfo;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FSDataInputStream;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 import org.codehaus.jackson.JsonGenerationException;
 import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;
@@ -44,11 +50,21 @@ import org.codehaus.jackson.map.ObjectMapper;
 public class App
 {
 	
-	
+	/**
+	 * 관리자 데이터 파일의 경로
+	 */
 	public static String datafile = "mgr.json";
 	
+	/**
+	 * 관리자 데이터를 파일 저장하기 위한 mapper 객체
+	 */
 	public static ObjectMapper mapper = new ObjectMapper();
 
+	/**
+	 * 관리자 데이터 로드
+	 * 
+	 * @return 관리자 데이터 객체
+	 */
 	public static ManagerData load()
 	{
 		ManagerData data = null;
@@ -72,6 +88,12 @@ public class App
 		return data;
 	}
 	
+	/**
+	 * 관리자 데이터 객체를 파일로 저장
+	 * 
+	 * @param data 관리자 데이터 객체
+	 * @return
+	 */
 	public static boolean save(ManagerData data)
 	{
 		try {
@@ -91,7 +113,14 @@ public class App
 		return false;
 	}
 	
-	public static PoolInfo findpool(ManagerData data, String poolname)
+	/**
+	 * 관리자 데이터 객체로 부터 Pool 정보를 검색
+	 * 
+	 * @param data	관리자 데이터 객체
+	 * @param poolname 검색하려는 pool 명
+	 * @return
+	 */
+	public static PoolInfo findPool(ManagerData data, String poolname)
 	{
 		if(data==null || data.pools==null) return null;
 		
@@ -100,7 +129,14 @@ public class App
 		return null;
 	}
 
-	public static boolean deletepool(ManagerData data, String poolname)
+	/**
+	 * 관리자 데이터 객체로부터 Pool 정보 삭제
+	 * 
+	 * @param data 관리자 데이터 객체
+	 * @param poolname pool 명
+	 * @return
+	 */
+	public static boolean deletePool(ManagerData data, String poolname)
 	{
 		if(data==null || data.pools==null) return false;
 		
@@ -113,7 +149,14 @@ public class App
 		return false;
 	}
 
-	public static AlgorithmInfo findalgo(ManagerData data, String algoname)
+	/**
+	 * 관리자 데이터 객체로부터 알고리즘 검색
+	 * 
+	 * @param data	관리자 데이터 객체
+	 * @param algoname 알고리즘 명
+	 * @return
+	 */
+	public static AlgorithmInfo findAlgo(ManagerData data, String algoname)
 	{
 		if(data==null || data.pools==null) return null;
 		
@@ -126,7 +169,15 @@ public class App
 		return null;
 	}
 
-	public static boolean deletealgo(ManagerData data, String poolname, String algoname)
+	/**
+	 * 관리자 데이터 객체로부터 알고리즘 삭제
+	 * 
+	 * @param data	관리자 데이터 객체
+	 * @param poolname 삭제하려는 알고리즘이 포함되는 pool 명
+	 * @param algoname 삭제라혀는 알고리즘의 이름
+	 * @return
+	 */
+	public static boolean deleteAlgo(ManagerData data, String poolname, String algoname)
 	{
 		if(data==null || data.pools==null) return false;
 		
@@ -147,30 +198,6 @@ public class App
 	
     public static void main( String[] args ) throws Exception
     {
-    	if(args.length<2) {
-//    		System.out.printf("poolmgr add <pool명> <파일명>\n");
-    		System.out.printf("poolmgr add <pool명>\n");
-    		System.out.printf("poolmgr delete <pool명>\n");
-    		System.out.printf("poolmgr list\n");
-    		System.out.printf("algomgr add <pool명> <algorithm명> <shell 명렁어>\n");
-    		System.out.printf("algomgr delete <pool명> <algorithm명>\n");
-//    		System.out.printf("algomgr delete <pool명> <algorithm명>\n");
-    		System.out.printf("algomgr list <pool명>\n");
-    		
-    		
-    		//	김정호 추가
-    		System.out.printf("algomgr setCommand <pool명> <algorithm명> <shell 명령어>\n");
-    		
-    		
-    		
-    		System.out.printf("optmgr add <algorithm명> <parameter명> numeric <초기값> <min> <max>\n");
-    		System.out.printf("optmgr add <algorithm명> <parameter명> nominal <초기값> <values>\n");
-//    		System.out.printf("optmgr add <algorithm명> <parameter명> <type(numeric|nominal)> <초기값> (<values>|(<min> <max>))\n");
-    		System.out.printf("optmgr delete <algorithm명> <parameter명>\n");
-    		System.out.printf("optmgr list <algorithm명>\n");
-    		
-    		return;
-    	}
     	String mgr = args[0];
     	String cmd = args[1];
     	
@@ -194,7 +221,7 @@ public class App
     		
     		for (PoolInfo poolInfo : info.pools){
     			if (poolInfo.getPoolName().equals(poolname)){
-        			System.out.printf("이미 동일한 이름의 pool이 존재합니다.!\n");
+        			System.out.printf("A pool with the same name exists!\n");
     				System.exit(1);
     			}
     		}
@@ -202,21 +229,21 @@ public class App
     		PoolInfo pi = new PoolInfo(poolname, poolfile);
     		info.pools.add(pi);
     		
-    		if(save(info)) System.out.printf("Add pool %s %s\n", poolname, poolfile);
-    		else System.out.printf("Add Fail..\n");
+    		if(save(info)) System.out.printf("Add pool poolName=[%s], jarFile=[%s]\n", poolname, poolfile);
+    		else System.out.printf("Fail to add...\n");
     	}
     	else if(mgr.equalsIgnoreCase("poolmgr") && cmd.equalsIgnoreCase("list"))
     	{
-			System.out.printf("Pool List\n========================\n");
+			System.out.printf("<Pool List>========================\n");
 
 			if(info==null) {
-				System.out.printf("none\n");
+				System.out.printf("none...\n");
 				return;
 			}
 
 			for(int i = 0; i<info.pools.size(); i++)
 			{
-				System.out.printf("pool%d. poolname=[%s], poolfile=[%s], algorithmcnt=[%d]\n", i+1, info.pools.get(i).getPoolName(), info.pools.get(i).getFileName(), info.pools.get(i).getAlgorithms().size());
+				System.out.printf("pool%d. poolName=[%s], poolFile=[%s], algorithmCount=[%d]\n", i+1, info.pools.get(i).getPoolName(), info.pools.get(i).getFileName(), info.pools.get(i).getAlgorithms().size());
 			}
     	}
     	else if(mgr.equalsIgnoreCase("poolmgr") && cmd.equalsIgnoreCase("delete") && args.length==3)
@@ -226,49 +253,103 @@ public class App
 			{
 				if(info.pools.get(i).getPoolName().equals(poolname))
 				{
-					System.out.printf("poolname=[%s] deleted\n", info.pools.get(i).getPoolName());
 					info.pools.remove(i);
 					if(save(info))
 					{
-//						System.out.printf("poolname=[%s] poolfile=[%s] deleted\n", info.pools.get(i).poolName, info.pools.get(i).fileName);
+						System.out.printf("poolName=[%s] has been deleted\n", info.pools.get(i).getPoolName());
 						return;
+					}else{
+						System.out.println("Fail to delete...");
 					}
 				}
 			}
 			System.out.printf("pool not found!!\n");			
     	}
     	// algo mgr
-    	else if(mgr.equalsIgnoreCase("algomgr") && cmd.equalsIgnoreCase("add") && args.length==6)
+    	else if(mgr.equalsIgnoreCase("algomgr") && cmd.equalsIgnoreCase("add") && args.length==4)
     	{
     		String poolname = args[2];
     		String algorithmname = args[3];
-    		String trainClassName = args[4];
-    		String classifyClassName = args[4];
     		
-    		PoolInfo pinfo = findpool(info, poolname);
+    		PoolInfo pinfo = findPool(info, poolname);
     		if(pinfo==null) {
-    			System.out.printf("poolname not found!\n");
+    			System.out.printf("poolName(="+poolname+") does not exit!\n");
     			return;
     		}
     		
-    		AlgorithmInfo ainfo = findalgo(info, algorithmname); // 알고리즘명 중복 허용안함.
+    		AlgorithmInfo ainfo = findAlgo(info, algorithmname); // 알고리즘명 중복 허용안함.
     		
     		if(ainfo!=null)
     		{
-    			System.out.printf("알고리즘이 이미 등록됨.\n");
+    			System.out.printf("The algorihm name(="+algorithmname+") already exists.\n");
     			return;
     		}
     		
-    		AlgorithmInfo ai = new AlgorithmInfo(algorithmname, trainClassName, classifyClassName);
+    		AlgorithmInfo ai = new AlgorithmInfo(algorithmname);
     		pinfo.getAlgorithms().add(ai);
     		
-    		if(save(info)) System.out.printf("Add algorithm %s %s %s %s\n", poolname, algorithmname, trainClassName, classifyClassName);
-    		else System.out.printf("Add Fail..\n");
+    		if(save(info)) System.out.printf("Add algorithm %s %s\n", poolname, algorithmname);
+    		else System.out.printf("Fail to add...\n");
+    	}
+    	else if(mgr.equalsIgnoreCase("algomgr") && cmd.equalsIgnoreCase("setParamFormat") && args.length==4)
+    	{
+    		String algorithmName = args[2];
+    		String paramFormat = args[3];
+    		
+    		AlgorithmInfo ainfo = findAlgo(info, algorithmName); // 알고리즘명 중복 허용안함.
+    		
+    		if(ainfo==null)
+    		{
+    			System.out.printf("The algorithm(="+algorithmName+") does not exist.\n");
+    			return;
+    		}
+    		
+    		ainfo.setParamFormat(paramFormat);
+    		
+    		if(save(info)) System.out.printf("Set algorithm parameter format (algorithm=[%s], paramFormat=[%s]) \n", algorithmName, paramFormat);
+    		else System.out.printf("Fail to set ...\n");
+    	}
+    	else if(mgr.equalsIgnoreCase("algomgr") && cmd.equalsIgnoreCase("setTrainClassName") && args.length==4)
+    	{
+    		String algorithmName = args[2];
+    		String className = args[3];
+    		
+    		AlgorithmInfo ainfo = findAlgo(info, algorithmName); // 알고리즘명 중복 허용안함.
+    		
+    		if(ainfo==null)
+    		{
+    			System.out.printf("The algorithm(="+algorithmName+") does not exist.\n");
+    			return;
+    		}
+    		
+    		ainfo.setTrainClassName(className);
+    		
+    		if(save(info)) System.out.printf("Set algorithm train class name format (algorithm=[%s], className=[%s]) \n", algorithmName, className);
+    		else System.out.printf("Fail to set ...\n");
+    	}
+    	else if(mgr.equalsIgnoreCase("algomgr") && cmd.equalsIgnoreCase("setClassifyClassName") && args.length==4)
+    	{
+    		String algorithmName = args[2];
+    		String className = args[3];
+    		
+    		AlgorithmInfo ainfo = findAlgo(info, algorithmName); // 알고리즘명 중복 허용안함.
+    		
+    		if(ainfo==null)
+    		{
+    			System.out.printf("The algorithm(="+algorithmName+") does not exist.\n");
+    			return;
+    		}
+    		
+    		ainfo.setClassifyClassName(className);
+    		
+    		if(save(info)) System.out.printf("Set algorithm classification class name format (algorithm=[%s], className=[%s]) \n", algorithmName, className);
+    		else System.out.printf("Fail to set...\n");
     	}
     	else if(mgr.equalsIgnoreCase("algomgr") 
     			&& cmd.equalsIgnoreCase("setParam") 
     			&& args.length==5
     			&& (ParamInfo.PARAM_TYPE_INPUT.equals(args[3]) 
+    					|| ParamInfo.PARAM_TYPE_INPUT_TEST.equals(args[3])
     					|| ParamInfo.PARAM_TYPE_DELIMITER.equals(args[3])
     					|| ParamInfo.PARAM_TYPE_OUTPUT.equals(args[3]) 
     					|| ParamInfo.PARAM_TYPE_INDEX_LIST.equals(args[3]) 
@@ -282,11 +363,11 @@ public class App
     		String paramType = args[3];
     		String paramName = args[4];
     		
-    		AlgorithmInfo ainfo = findalgo(info, algorithmname); // 알고리즘명 중복 허용안함.
+    		AlgorithmInfo ainfo = findAlgo(info, algorithmname); // 알고리즘명 중복 허용안함.
     		
     		if(ainfo==null)
     		{
-    			System.out.printf("알고리즘이 존재하지 않습니다.\n");
+    			System.out.printf("The algorithm(="+algorithmname+") does not exist.\n");
     			return;
     		}
     		
@@ -308,8 +389,8 @@ public class App
     			ainfo.getParams().add(paramInfo);
     		}
     		
-    		if(save(info)) System.out.printf("Set algorithm parameter %s %s %s\n", algorithmname, paramType, paramName);
-    		else System.out.printf("Add Fail..\n");
+    		if(save(info)) System.out.printf("Set algorithm parameter (algorithm=[%s], classType=[%s], paramName=[%s])\n", algorithmname, paramType, paramName);
+    		else System.out.printf("Fail to set...\n");
     	}
     	else if(mgr.equalsIgnoreCase("algomgr") 
     			&& cmd.equalsIgnoreCase("setParam") 
@@ -322,16 +403,16 @@ public class App
     		String paramName = args[4];
     		String dataType = args[5];
     		
-    		AlgorithmInfo ainfo = findalgo(info, algorithmname); // 알고리즘명 중복 허용안함.
+    		AlgorithmInfo ainfo = findAlgo(info, algorithmname); // 알고리즘명 중복 허용안함.
     		
     		if(ainfo==null)
     		{
-    			System.out.printf("알고리즘이 존재하지 않습니다.\n");
+    			System.out.printf("The algorithm(="+algorithmname+") does not exist.\n");
     			return;
     		}
     		
     		if (!ParamInfo.DATA_TYPE_INT.equals(dataType) && !ParamInfo.DATA_TYPE_FLOAT.equals(dataType)){
-    			System.out.printf("자료형이 존재하지 않습니다.\n");
+    			System.out.printf("The data type(= "+dataType+") dones not exist.\n");
     			return;
     		}
     		
@@ -342,7 +423,7 @@ public class App
     				Integer.parseInt(min);
     				Integer.parseInt(max);
     			}catch(NumberFormatException ex){
-    				System.out.println("최대값 및 최소값을 자료형에 맞게 입력해주세요.");
+    				System.out.println("Please input correct min and max values in the data type format.");
     				return;
     				
     			}
@@ -351,7 +432,7 @@ public class App
     				Float.parseFloat(min);
     				Float.parseFloat(max);
     			}catch(NumberFormatException ex){
-    				System.out.println("최대값 및 최소값을 자료형에 맞게 입력해주세요.");
+    				System.out.println("Please input correct min and max values in the data type format.");
     				return;
     				
     			}
@@ -385,8 +466,8 @@ public class App
     			ainfo.getParams().add(paramInfo);
     		}
     		
-    		if(save(info)) System.out.printf("Set algorithm parameter %s %s %s %s %s %s\n", algorithmname, paramType, paramName, dataType, min, max);
-    		else System.out.printf("Set Fail..\n");
+    		if(save(info)) System.out.printf("Set algorithm parameter (algorithm=[%s], paramType=[%s], paramName=[%s], dataType=[%s], min=[%s], max=[%s])\n", algorithmname, paramType, paramName, dataType, min, max);
+    		else System.out.printf("Fail to set...\n");
     	}
     	else if(mgr.equalsIgnoreCase("algomgr") 
     			&& cmd.equalsIgnoreCase("setParam") 
@@ -402,11 +483,11 @@ public class App
         		paramValue = args[5];
     		}
     		
-    		AlgorithmInfo ainfo = findalgo(info, algorithmname); // 알고리즘명 중복 허용안함.
+    		AlgorithmInfo ainfo = findAlgo(info, algorithmname); // 알고리즘명 중복 허용안함.
     		
     		if(ainfo==null)
     		{
-    			System.out.printf("알고리즘이 존재하지 않습니다.\n");
+    			System.out.printf("The algorithm(="+algorithmname+") does not exist.\n");
     			return;
     		}
     		
@@ -431,19 +512,19 @@ public class App
     			ainfo.getParams().add(paramInfo);
     		}
     		
-    		if(save(info)) System.out.printf("Set algorithm parameter %s %s %s %s\n", algorithmname, paramType, paramName, paramValue);
-    		else System.out.printf("Add Fail..\n");
+    		if(save(info)) System.out.printf("Set algorithm parameter (algorithm=[%s], paramType=[%s], paramName=[%s], paramValue=[%s])\n", algorithmname, paramType, paramName, paramValue);
+    		else System.out.printf("Fail to set...\n");
     	}
     	else if(mgr.equalsIgnoreCase("algomgr") && cmd.equalsIgnoreCase("delParam") && args.length==4)
     	{
     		String algorithmname = args[2];
     		String paramName = args[3];
     		
-    		AlgorithmInfo ainfo = findalgo(info, algorithmname); // 알고리즘명 중복 허용안함.
+    		AlgorithmInfo ainfo = findAlgo(info, algorithmname); // 알고리즘명 중복 허용안함.
     		
     		if(ainfo==null)
     		{
-    			System.out.printf("알고리즘이 존재하지 않습니다.\n");
+    			System.out.printf("The algorithm(="+algorithmname+") does not exist.\n");
     			return;
     		}
 
@@ -458,77 +539,77 @@ public class App
     			idx++;
     		}
     		
-    		if(save(info)) System.out.printf("Delete algorithm parameter %s %s\n", algorithmname, paramName);
-    		else System.out.printf("Add Fail..\n");
+    		if(save(info)) System.out.printf("Delete algorithm parameter (algorithm=[%s], paramName=[%s])\n", algorithmname, paramName);
+    		else System.out.printf("Fail to delete...\n");
     	}
     	else if(mgr.equalsIgnoreCase("algomgr") && cmd.equalsIgnoreCase("setClassifyOutputRelPath") && args.length==4)
     	{
     		String algorithmname = args[2];
     		String classifyOutputRelPath = args[3];
     		
-    		AlgorithmInfo ainfo = findalgo(info, algorithmname); // 알고리즘명 중복 허용안함.
+    		AlgorithmInfo ainfo = findAlgo(info, algorithmname); // 알고리즘명 중복 허용안함.
     		
     		if(ainfo==null)
     		{
-    			System.out.printf("알고리즘이 존재하지 않습니다.\n");
+    			System.out.printf("The algorithm(="+algorithmname+") does not exist.\n");
     			return;
     		}
 
     		ainfo.setClassifyOutputRelPath(classifyOutputRelPath);
     		
-    		if(save(info)) System.out.printf("Add algorithm classification output relative path %s %s\n", algorithmname, classifyOutputRelPath);
-    		else System.out.printf("Add Fail..\n");
+    		if(save(info)) System.out.printf("Set algorithm classification output relative path (algorithm=[%s], classifyOutputRelPath=[%s])\n", algorithmname, classifyOutputRelPath);
+    		else System.out.printf("Fail to set...\n");
     	}
     	else if(mgr.equalsIgnoreCase("algomgr") && cmd.equalsIgnoreCase("delClassifyOutputRelPath") && args.length==3)
     	{
     		String algorithmname = args[2];
     		
-    		AlgorithmInfo ainfo = findalgo(info, algorithmname); // 알고리즘명 중복 허용안함.
+    		AlgorithmInfo ainfo = findAlgo(info, algorithmname); // 알고리즘명 중복 허용안함.
     		
     		if(ainfo==null)
     		{
-    			System.out.printf("알고리즘이 존재하지 않습니다.\n");
+    			System.out.printf("The algorithm(="+algorithmname+") does not exist.\n");
     			return;
     		}
 
     		ainfo.setClassifyOutputRelPath(null);
     		
-    		if(save(info)) System.out.printf("Delete algorithm classification output relative path %s\n", algorithmname);
-    		else System.out.printf("Delete Fail..\n");
+    		if(save(info)) System.out.printf("Delete algorithm classification output relative path (algorithm=[%s])\n", algorithmname);
+    		else System.out.printf("Fail to delete...\n");
     	}
     	else if(mgr.equalsIgnoreCase("algomgr") && cmd.equalsIgnoreCase("setModelAbsPath") && args.length==4)
     	{
     		String algorithmname = args[2];
     		String modelPath = args[3];
     		
-    		AlgorithmInfo ainfo = findalgo(info, algorithmname); // 알고리즘명 중복 허용안함.
+    		AlgorithmInfo ainfo = findAlgo(info, algorithmname); // 알고리즘명 중복 허용안함.
     		
     		if(ainfo==null)
     		{
-    			System.out.printf("알고리즘이 존재하지 않습니다.\n");
+    			System.out.printf("The algorithm(="+algorithmname+") does not exist.\n");
     			return;
     		}
     		
     		ainfo.setModelAbsPath(modelPath);
     		
-    		if(save(info)) System.out.printf("Add algorithm model absolute path %s %s\n", algorithmname, modelPath);
-    		else System.out.printf("Add Fail..\n");
+    		if(save(info)) System.out.printf("Set algorithm model absolute path (algorithm=[%s], modelAbsPath=[%s])\n", algorithmname, modelPath);
+    		else System.out.printf("Fail to set...\n");
     	}
     	else if(mgr.equalsIgnoreCase("algomgr") && cmd.equalsIgnoreCase("delModelAbsPath") && args.length==3)
     	{
     		String algorithmname = args[2];
     		
-    		AlgorithmInfo ainfo = findalgo(info, algorithmname); // 알고리즘명 중복 허용안함.
+    		AlgorithmInfo ainfo = findAlgo(info, algorithmname); // 알고리즘명 중복 허용안함.
     		
     		if(ainfo==null)
     		{
-    			System.out.printf("알고리즘이 존재하지 않습니다.\n");
+    			System.out.printf("The algorithm(="+algorithmname+") does not exist.\n");
     			return;
     		}
 
     		ainfo.setModelAbsPath(null);
     		
-    		if(save(info)) System.out.printf("Delete algorithm model absolute path %s\n", algorithmname);
+    		if(save(info)) System.out.printf("Delete algorithm model absolute path (algorithm=[%s])\n", algorithmname);
     		else System.out.printf("Delete Fail..\n");
     	}
     	else if(mgr.equalsIgnoreCase("algomgr") && cmd.equalsIgnoreCase("setModelRelPath") && args.length==4)
@@ -536,79 +617,79 @@ public class App
     		String algorithmname = args[2];
     		String modelPath = args[3];
     		
-    		AlgorithmInfo ainfo = findalgo(info, algorithmname); // 알고리즘명 중복 허용안함.
+    		AlgorithmInfo ainfo = findAlgo(info, algorithmname); // 알고리즘명 중복 허용안함.
     		
     		if(ainfo==null)
     		{
-    			System.out.printf("알고리즘이 존재하지 않습니다.\n");
+    			System.out.printf("The algorithm(="+algorithmname+") does not exist.\n");
     			return;
     		}
     		
     		ainfo.setModelRelPath(modelPath);
     		
-    		if(save(info)) System.out.printf("Add algorithm model relative path %s %s\n", algorithmname, modelPath);
-    		else System.out.printf("Add Fail..\n");
+    		if(save(info)) System.out.printf("Set algorithm model relative path (algorithm=[%s], modelRelPath=[%s])\n", algorithmname, modelPath);
+    		else System.out.printf("Fail to set...\n");
     	}
     	else if(mgr.equalsIgnoreCase("algomgr") && cmd.equalsIgnoreCase("delModelRelPath") && args.length==3)
     	{
     		String algorithmname = args[2];
     		
-    		AlgorithmInfo ainfo = findalgo(info, algorithmname); // 알고리즘명 중복 허용안함.
+    		AlgorithmInfo ainfo = findAlgo(info, algorithmname); // 알고리즘명 중복 허용안함.
     		
     		if(ainfo==null)
     		{
-    			System.out.printf("알고리즘이 존재하지 않습니다.\n");
+    			System.out.printf("The algorithm(="+algorithmname+") does not exist.\n");
     			return;
     		}
 
     		ainfo.setModelRelPath(null);
     		
-    		if(save(info)) System.out.printf("Delete algorithm model relative path %s\n", algorithmname);
-    		else System.out.printf("Delete Fail..\n");
+    		if(save(info)) System.out.printf("Delete algorithm model relative path (algorithm=[%s])\n", algorithmname);
+    		else System.out.printf("Fail to delete...\n");
     	}
     	else if(mgr.equalsIgnoreCase("algomgr") && cmd.equalsIgnoreCase("setParamValueDelimiter") && args.length==4)
     	{
     		String algorithmname = args[2];
     		String paramValueDelimiter = args[3];
     		
-    		AlgorithmInfo ainfo = findalgo(info, algorithmname); // 알고리즘명 중복 허용안함.
+    		AlgorithmInfo ainfo = findAlgo(info, algorithmname); // 알고리즘명 중복 허용안함.
     		
     		if(ainfo==null)
     		{
-    			System.out.printf("알고리즘이 존재하지 않습니다.\n");
+    			System.out.printf("The algorithm(="+algorithmname+") does not exist.\n");
     			return;
     		}
 
 			ainfo.setParamValueDelimiter(paramValueDelimiter);
     		
-    		if(save(info)) System.out.printf("Add algorithm parameter value delimiter %s %s\n", algorithmname, paramValueDelimiter);
-    		else System.out.printf("Add Fail..\n");
+    		if(save(info)) System.out.printf("Set algorithm parameter value delimiter (algorithm=[%s], paramValueDelimiter=[%s])\n", algorithmname, paramValueDelimiter);
+    		else System.out.printf("Fail to est...\n");
     	}
     	else if(mgr.equalsIgnoreCase("algomgr") && cmd.equalsIgnoreCase("delParamValueDelimiter") && args.length==3)
     	{
     		String algorithmname = args[2];
     		
-    		AlgorithmInfo ainfo = findalgo(info, algorithmname); // 알고리즘명 중복 허용안함.
+    		AlgorithmInfo ainfo = findAlgo(info, algorithmname); // 알고리즘명 중복 허용안함.
     		
     		if(ainfo==null)
     		{
-    			System.out.printf("알고리즘이 존재하지 않습니다.\n");
+    			System.out.printf("The algorithm(="+algorithmname+") does not exist.\n");
     			return;
     		}
 
 			ainfo.setParamValueDelimiter(null);
     		
-    		if(save(info)) System.out.printf("Delete algorithm parameter value delimiter %s \n", algorithmname);
-    		else System.out.printf("Add Fail..\n");
+    		if(save(info)) System.out.printf("Delete algorithm parameter value delimiter (algorithm=[%s]) \n", algorithmname);
+    		else System.out.printf("Fail to delete...\n");
     	}
     	else if(mgr.equalsIgnoreCase("algomgr") && cmd.equalsIgnoreCase("list") && args.length==3)
     	{
     		String poolname = args[2];
-			System.out.printf("%s pool algorithm List\n========================\n", poolname);
+			System.out.printf("<Pool(= %s) algorithm List>\n========================\n", poolname);
 
-    		PoolInfo pinfo = findpool(info, poolname);
+    		PoolInfo pinfo = findPool(info, poolname);
     		if(pinfo==null) {
-    			System.out.printf("pool not found!\n");
+    			System.out.printf("The pool (= "+poolname+") does not exist!\n");
     			return;
     		}
 
@@ -624,26 +705,26 @@ public class App
     	{
     		String poolname = args[2];
     		String algorithmname = args[3];
-    		if(deletealgo(info, poolname, algorithmname)) {
+    		if(deleteAlgo(info, poolname, algorithmname)) {
     			if(save(info))
     			{
-					System.out.printf("algorithm명=[%s] deleted\n", algorithmname);
+					System.out.printf("algorithmName=[%s] deleted\n", algorithmname);
     				return;
     			}
     		}
     			
-			System.out.printf("[%s] algorithm not found!!\n", algorithmname);			
+			System.out.printf("The algorithm(= %s) does not exist!\n", algorithmname);			
     	}
     	else if(mgr.equalsIgnoreCase("algomgr") && cmd.equalsIgnoreCase("setClassifyOutputMode") && args.length==4)
     	{
     		String algorithmname = args[2];
     		String mode = args[3];
     		
-    		AlgorithmInfo ainfo = findalgo(info, algorithmname); // 알고리즘명 중복 허용안함.
+    		AlgorithmInfo ainfo = findAlgo(info, algorithmname); // 알고리즘명 중복 허용안함.
     		
     		if(ainfo==null)
     		{
-    			System.out.printf("알고리즘이 존재하지 않습니다.\n");
+    			System.out.printf("The algorithm(= "+algorithmname+") does not exist.\n");
     			return;
     		}
     		
@@ -658,58 +739,217 @@ public class App
     		
 			ainfo.setClassifyOutputMode(mode);
     		if (save(info)){
-    			System.out.printf("Set algorithm classify output mode %s %s\n", algorithmname, mode);
-    		}else System.out.println("Fail ....");
+    			System.out.printf("Set algorithm classify output mode (algorithm=[%s], classifyOutputMode=[%s])\n", algorithmname, mode);
+    		}else System.out.println("Fail to set ....");
     	}
     	// opt mgr
-    	else if(mgr.equalsIgnoreCase("optmgr") && cmd.equalsIgnoreCase("infSet") && args.length==7)
+    	else if(mgr.equalsIgnoreCase("optmgr") && cmd.equalsIgnoreCase("dataList") && args.length == 2)
     	{
-    		String path = args[2];
+    		
+    		OptimizerConfigInfo configInfo = info.getOptimizerConfigInfo();
+    		String dataFile = configInfo.getDataFilePath();
+    		if (dataFile == null || "".equals(dataFile.trim())){
+    			System.out.println("Please set an input data file.");
+    			System.exit(1);
+    		}
+
+    		FileSystem fs = FileSystem.get(new Configuration());
+    		Path dataFilePath = new Path(dataFile);
+    		
+    		if (!fs.exists(dataFilePath)){
+    			System.out.println("The input data file does not exist on HDFS.\n(Path = "+dataFile+")");
+    			System.exit(1);
+    		}
+    		
+    		long sizeFileKb = fs.getFileStatus(dataFilePath).getLen()/1024L;
+    		
+    		FSDataInputStream is = fs.open(dataFilePath);
+    		InputStreamReader ir = new InputStreamReader(is, "UTF-8");
+    		BufferedReader br = new BufferedReader(ir);
+    		int cntRow = 0;
+    		StringBuffer sb = new StringBuffer();
+    		String rl = null;
+    		int cntAttr = 0;
+    		while ((rl = br.readLine()) != null && cntRow < 10){
+    			sb.append(rl);
+    			sb.append("\n");
+
+    			if (cntRow == 0){
+    	    		StringTokenizer tokenizer = new StringTokenizer(rl, configInfo.getDelimiter());
+    	    		while (tokenizer.hasMoreTokens()){
+    	    			tokenizer.nextToken();
+    	    			cntAttr++;
+    	    		}
+    			}
+    			cntRow++;
+    		}
+    		
+    		System.out.println("=========================================================");
+    		System.out.println("Data file path = "+dataFile);
+    		System.out.println("File size(KB) = "+sizeFileKb);
+    		System.out.println("Number of Attributes = "+cntAttr);
+    		System.out.println("------(First 10 records, after below)--------------------");
+    		System.out.println(sb.toString());
+    		System.out.println("=========================================================");
+    	}
+    	else if(mgr.equalsIgnoreCase("optmgr") && cmd.equalsIgnoreCase("setMultiThreadEval") && args.length==3)
+    	{
+    		String multiThreadEval = args[2];
+    		
+    		boolean flag = false;
+    		if ("true".equals(multiThreadEval)){
+    			flag = true;
+    		}else if ("false".equals(multiThreadEval)){
+    			flag = false;
+    		}else{
+    			System.out.println("Fail wrong parameter value");
+    			return;
+    		}
+    		
+    		OptimizerConfigInfo configInfo = info.getOptimizerConfigInfo();
+    		configInfo.setMultiThreadEval(flag);
+    		
+    		if(save(info)) System.out.printf("Set optimizer multi thread evaluation %s\n", multiThreadEval);
+    		else System.out.printf("Fail to set...\n");
+    	}
+    	else if(mgr.equalsIgnoreCase("optmgr") && cmd.equalsIgnoreCase("infSet") && args.length==4)
+    	{
+    		String dataFilePath = args[2];
     		String delimiter = args[3];
-    		String indexListString = args[4];
+    		
+    		OptimizerConfigInfo configInfo = info.getOptimizerConfigInfo();
+    		configInfo.setDataFilePath(dataFilePath);
+    		configInfo.setDelimiter(delimiter);
+    		
+    		if(save(info)) System.out.printf("Set optimizer input data data file path=%s, delimiter=%s\n", dataFilePath, delimiter);
+    		else System.out.printf("Fail to set...\n");
+    	}
+    	else if(mgr.equalsIgnoreCase("optmgr") && cmd.equalsIgnoreCase("infNumericIndexList") && args.length==3)
+    	{
+    		String indexListString = args[2];
     		ArrayList<String> indexList = new ArrayList<String>();
     		for (String label : indexListString.split(",")){
     			indexList.add(label);
     		}
-    		int classIndex =  Integer.parseInt(args[5]);
-    		String classLabelListString =  args[6];
+    		
+    		OptimizerConfigInfo configInfo = info.getOptimizerConfigInfo();
+    		configInfo.setNumericIndexList(indexList);
+    		
+    		if(save(info)) System.out.printf("Set optimizer numericIndexList=[%s]\n", indexListString);
+    		else System.out.printf("Fail to set...\n");
+    	}
+    	else if(mgr.equalsIgnoreCase("optmgr") && cmd.equalsIgnoreCase("infNominalIndexList") && args.length==3)
+    	{
+    		String indexListString = args[2];
+    		ArrayList<String> indexList = new ArrayList<String>();
+    		for (String label : indexListString.split(",")){
+    			indexList.add(label);
+    		}
+    		
+    		OptimizerConfigInfo configInfo = info.getOptimizerConfigInfo();
+    		configInfo.setNominalIndexList(indexList);
+    		
+    		if(save(info)) System.out.printf("Set optimizer nominalIndexList=[%s]\n", indexListString);
+    		else System.out.printf("Fail to set...\n");
+    	}
+    	else if(mgr.equalsIgnoreCase("optmgr") && cmd.equalsIgnoreCase("infClass") && args.length==4)
+    	{
+    		int classIndex =  Integer.parseInt(args[2]);
+    		String classLabelListString =  args[3];
     		ArrayList<String> classLabelList = new ArrayList<String>();
     		for (String label : classLabelListString.split(",")){
     			classLabelList.add(label);
     		}
-    		DataInfo dataInfo = new DataInfo(path, delimiter, indexList, classIndex, classLabelList);
     		
     		OptimizerConfigInfo configInfo = info.getOptimizerConfigInfo();
-    		configInfo.setInput(dataInfo);
+    		configInfo.setClassIndex(classIndex);
+    		configInfo.setClassLabelList(classLabelList);
     		
-    		if(save(info)) System.out.printf("Set optimizer input data path=%s, delimiter=%s indexList=[%s] classIndex=%s, classLabelList=[%s]\n", path, delimiter, indexListString, classIndex, classLabelListString);
-    		else System.out.printf("Add Fail..\n");
+    		if(save(info)) System.out.printf("Set optimizer classIndex=%s, classLabelList=[%s]\n", classIndex, classLabelListString);
+    		else System.out.printf("Fail to set...\n");
     	}
     	else if(mgr.equalsIgnoreCase("optmgr") && cmd.equalsIgnoreCase("algSet") && args.length==4)
     	{
     		String poolName = args[2];
     		String algorithmName = args[3];
     		
-    		PoolInfo pinfo = findpool(info, poolName);
+    		PoolInfo pinfo = findPool(info, poolName);
     		if(pinfo==null) {
-    			System.out.printf("pool not found!\n");
+    			System.out.printf("The pool(= "+poolName+") does not exist!\n");
     			return;
     		}
     		
     		
-    		AlgorithmInfo algorithmInfo = findalgo(info, algorithmName);
+    		AlgorithmInfo algorithmInfo = findAlgo(info, algorithmName);
     		
     		if (algorithmInfo == null){
-    			System.out.println("알고리즘이 존재하지 않습니다.");
+    			System.out.println("The alogirhm(= "+algorithmName+") does not exist.");
+    			return;
+    		}
+    		
+    		if (poolName.equals(info.getOptimizerConfigInfo().getPoolName()) 
+    				&& algorithmName.equals(info.getOptimizerConfigInfo().getAlgorithmName())){
+    			System.out.println("The algorithm(= "+algorithmName+") already has been set.");
     			return;
     		}
     		
     		OptimizerConfigInfo configInfo = info.getOptimizerConfigInfo();
     		configInfo.setPoolName(poolName);
     		configInfo.setAlgorithmName(algorithmName);
+    		configInfo.getUserAlgorithmParams().clear();
     		
-    		if(save(info)) System.out.printf("Set optimizer algorithm %s %s\n", poolName,algorithmName);
-    		else System.out.printf("Add Fail..\n");
+    		if(save(info)){
+    			System.out.printf("Set optimizer algorithm %s %s\n", poolName,algorithmName);
+    			
+    			System.out.printf("<Current algorithm( = "+algorithmName+") parameter settings>--------------------------\n");
+        		
+        		//	사용자 파라메터 입력모드를 위한 대체 파라메터 map 설정
+        		Map<String, ParamInfo> algParamMap = new HashMap<String, ParamInfo>();
+        		if (info.getOptimizerConfigInfo().isUserAlgorithmParamMode()){
+            		for (ParamInfo tmpParam : info.getOptimizerConfigInfo().getUserAlgorithmParams()){
+            			algParamMap.put(tmpParam.getParamName(), tmpParam);
+            		}
+        		}
+
+        		List<ParamInfo> params = algorithmInfo.getParams();
+        		int idxParam=0;
+        		for (ParamInfo tmpParam : params){
+        			
+        			if (algParamMap.containsKey(tmpParam.getParamName()))
+        				tmpParam = algParamMap.get(tmpParam.getParamName());
+        			
+        			if (ParamInfo.PARAM_TYPE_INPUT.equals(tmpParam.getParamType()) 
+        					|| ParamInfo.PARAM_TYPE_INPUT_TEST.equals(tmpParam.getParamType())
+        					|| ParamInfo.PARAM_TYPE_DELIMITER.equals(tmpParam.getParamType())
+        					|| ParamInfo.PARAM_TYPE_OUTPUT.equals(tmpParam.getParamType()) 
+        					|| ParamInfo.PARAM_TYPE_INDEX_LIST.equals(tmpParam.getParamType()) 
+        					|| ParamInfo.PARAM_TYPE_NUMERIC_INDEX_LIST.equals(tmpParam.getParamType()) 
+        					|| ParamInfo.PARAM_TYPE_NOMINAL_INDEX_LIST.equals(tmpParam.getParamType()) 
+        					|| ParamInfo.PARAM_TYPE_CLASS_INDEX.equals(tmpParam.getParamType())
+        					|| ParamInfo.PARAM_TYPE_MODEL_PATH.equals(tmpParam.getParamType())
+        					){
+        				System.out.printf("param-%d. paramType=[%s], paramName=[%s]\n"
+        						,idxParam, tmpParam.getParamType(), tmpParam.getParamName());
+        			}else if (ParamInfo.PARAM_TYPE_OPTIMIZE.equals(tmpParam.getParamType())){
+        				if (tmpParam.getParamValue() != null){
+            				System.out.printf("param-%d. paramType=[%s], paramName=[%s], dataType=[%s], paramValue=%s\n"
+            						,idxParam, tmpParam.getParamType(), tmpParam.getParamName(), tmpParam.getDataType(), tmpParam.getParamValue());
+        				}else{
+            				System.out.printf("param-%d. paramType=[%s], paramName=[%s], dataType=[%s], min=%s, max=%s\n"
+            						,idxParam, tmpParam.getParamType(), tmpParam.getParamName(), tmpParam.getDataType(), tmpParam.getMin(), tmpParam.getMax());
+        				}
+        			}else if (ParamInfo.PARAM_TYPE_TRAIN_ETC.equals(tmpParam.getParamType())
+        					|| ParamInfo.PARAM_TYPE_CLASSIFY_ETC.equals(tmpParam.getParamType())){
+        				System.out.printf("param-%d. paramType=[%s], paramName=[%s], paramValue=%s\n"
+        						,idxParam, tmpParam.getParamType(), tmpParam.getParamName(), tmpParam.getParamValue());
+        			}
+        			idxParam++;
+        			
+        		}
+        		
+    			System.out.printf("--------------------------------------------------------------------------\n");    			
+    		}
+    		else System.out.printf("Fail to set...\n");
     	}
     	else if(mgr.equalsIgnoreCase("optmgr") && cmd.equalsIgnoreCase("genSet") && args.length==4)
     	{
@@ -734,7 +974,7 @@ public class App
     		}
     		
     		if(save(info)) System.out.printf("Set optimizer parameter[%s]=%s\n", paramName, paramValue);
-    		else System.out.printf("Add Fail..\n");
+    		else System.out.printf("Fail to set...\n");
     	}
     	else if(mgr.equalsIgnoreCase("optmgr") && cmd.equalsIgnoreCase("genSetList") && args.length==2)
     	{
@@ -758,36 +998,36 @@ public class App
     		}else if ("random".equals(paramValue)){
     			configInfo.setUserAlgorithmParamMode(false);
     		}else{
-    			System.out.printf("설정 실패: user 혹은 random으로 설정할 수 있습니다..\n");
+    			System.out.printf("Fail to set!!!: The available parameter values are only 'user' and 'random'.\n");
     			return;
     		}
     		    		
     		if(save(info)) System.out.printf("Set algorithm paramter setting mode = %s\n", paramValue);
-    		else System.out.printf("Set Fail..\n");
+    		else System.out.printf("Fail to set..\n");
     	}
-    	else if(mgr.equalsIgnoreCase("optmgr") && cmd.equalsIgnoreCase("algParaSet") && args.length==5)
+    	else if(mgr.equalsIgnoreCase("optmgr") && cmd.equalsIgnoreCase("algParaSet") && args.length==4)
     	{
-    		String algorithmName = args[2];
-    		String paramName = args[3];
-    		String paramValue = args[4];
+    		String algorithmName = info.getOptimizerConfigInfo().getAlgorithmName();
+    		String paramName = args[2];
+    		String paramValue = args[3];
     		
-    		AlgorithmInfo ainfo = findalgo(info, algorithmName); // 알고리즘명 중복 허용안함.
+    		AlgorithmInfo ainfo = findAlgo(info, algorithmName); // 알고리즘명 중복 허용안함.
     		
     		if(ainfo==null)
     		{
-    			System.out.printf("알고리즘이 존재하지 않습니다.\n");
+    			System.out.printf("The algorithm(="+algorithmName+") does not exist.\n");
     			return;
     		}
     		
     		ParamInfo paramInfo = null;
     		for (ParamInfo tmp : ainfo.getParams()){
-    			if (paramName.equals(tmp.getParamName())){
+    			if (paramName.equals(tmp.getParamName()) && ParamInfo.PARAM_TYPE_OPTIMIZE.equals(tmp.getParamType())){
     				paramInfo = tmp;
     				break;
     			}
     		}
     		if (paramInfo == null){
-    			System.out.printf("알고리즘에 관련 파라메터가 정의되어있지 않습니다.\n");
+    			System.out.printf("Fail to set!!!: the parameter(= "+paramName+") is not for optimization.\n");
     			return;
     		}
     		
@@ -814,19 +1054,69 @@ public class App
 				userAlgorithmParms.add(paramInfo2);
     		}
 
-    		if(save(info)) System.out.printf("Add user algorithm parameter values parameter[%s]=%s\n", paramName, paramValue);
-    		else System.out.printf("Add Fail..\n");
-    	}
-    	else if(mgr.equalsIgnoreCase("optmgr") && cmd.equalsIgnoreCase("algParaDel") && args.length==4)
-    	{
-    		String algorithmName = args[2];
-    		String paramName = args[3];
+    		if(save(info)){
+    			System.out.printf("Set user algorithm parameter values parameter[%s]=%s\n", paramName, paramValue);
+
+    			System.out.printf("<Current algorithm( = "+algorithmName+") parameter settings>--------------------------\n");
     		
-    		AlgorithmInfo ainfo = findalgo(info, algorithmName); // 알고리즘명 중복 허용안함.
+        		//	사용자 파라메터 입력모드를 위한 대체 파라메터 map 설정
+        		Map<String, ParamInfo> algParamMap = new HashMap<String, ParamInfo>();
+        		if (info.getOptimizerConfigInfo().isUserAlgorithmParamMode()){
+            		for (ParamInfo tmpParam : info.getOptimizerConfigInfo().getUserAlgorithmParams()){
+            			algParamMap.put(tmpParam.getParamName(), tmpParam);
+            		}
+        		}
+
+        		List<ParamInfo> params = ainfo.getParams();
+        		int idxParam=0;
+        		for (ParamInfo tmpParam : params){
+        			
+        			if (algParamMap.containsKey(tmpParam.getParamName()))
+        				tmpParam = algParamMap.get(tmpParam.getParamName());
+        			
+        			if (ParamInfo.PARAM_TYPE_INPUT.equals(tmpParam.getParamType()) 
+        					|| ParamInfo.PARAM_TYPE_INPUT_TEST.equals(tmpParam.getParamType())
+        					|| ParamInfo.PARAM_TYPE_DELIMITER.equals(tmpParam.getParamType())
+        					|| ParamInfo.PARAM_TYPE_OUTPUT.equals(tmpParam.getParamType()) 
+        					|| ParamInfo.PARAM_TYPE_INDEX_LIST.equals(tmpParam.getParamType()) 
+        					|| ParamInfo.PARAM_TYPE_NUMERIC_INDEX_LIST.equals(tmpParam.getParamType()) 
+        					|| ParamInfo.PARAM_TYPE_NOMINAL_INDEX_LIST.equals(tmpParam.getParamType()) 
+        					|| ParamInfo.PARAM_TYPE_CLASS_INDEX.equals(tmpParam.getParamType())
+        					|| ParamInfo.PARAM_TYPE_MODEL_PATH.equals(tmpParam.getParamType())
+        					){
+        				System.out.printf("param-%d. paramType=[%s], paramName=[%s]\n"
+        						,idxParam, tmpParam.getParamType(), tmpParam.getParamName());
+        			}else if (ParamInfo.PARAM_TYPE_OPTIMIZE.equals(tmpParam.getParamType())){
+        				if (tmpParam.getParamValue() != null){
+            				System.out.printf("param-%d. paramType=[%s], paramName=[%s], dataType=[%s], paramValue=%s\n"
+            						,idxParam, tmpParam.getParamType(), tmpParam.getParamName(), tmpParam.getDataType(), tmpParam.getParamValue());
+        				}else{
+            				System.out.printf("param-%d. paramType=[%s], paramName=[%s], dataType=[%s], min=%s, max=%s\n"
+            						,idxParam, tmpParam.getParamType(), tmpParam.getParamName(), tmpParam.getDataType(), tmpParam.getMin(), tmpParam.getMax());
+        				}
+        			}else if (ParamInfo.PARAM_TYPE_TRAIN_ETC.equals(tmpParam.getParamType())
+        					|| ParamInfo.PARAM_TYPE_CLASSIFY_ETC.equals(tmpParam.getParamType())){
+        				System.out.printf("param-%d. paramType=[%s], paramName=[%s], paramValue=%s\n"
+        						,idxParam, tmpParam.getParamType(), tmpParam.getParamName(), tmpParam.getParamValue());
+        			}
+        			idxParam++;
+        			
+        		}
+        		
+    			System.out.printf("--------------------------------------------------------------------------\n");
+    		}
+    		else System.out.printf("Fail to set...\n");
+    	}
+    	else if(mgr.equalsIgnoreCase("optmgr") && cmd.equalsIgnoreCase("algParaDel") && args.length==3)
+    	{
+    		String algorithmName = info.getOptimizerConfigInfo().getAlgorithmName();
+    		String paramName = args[2];
+    		
+    		AlgorithmInfo ainfo = findAlgo(info, algorithmName); // 알고리즘명 중복 허용안함.
     		
     		if(ainfo==null)
     		{
-    			System.out.printf("알고리즘이 존재하지 않습니다.\n");
+    			System.out.printf("The algorithm(="+algorithmName+") does not exist.\n");
     			return;
     		}
     		
@@ -841,166 +1131,183 @@ public class App
     			idx++;
     		}
 
-    		if(save(info)) System.out.printf("Delete user algorithm parameter values parameter[%s]\n", paramName);
-    		else System.out.printf("Add Fail..\n");
-    	}
-    	else if(mgr.equalsIgnoreCase("optmgr") && cmd.equalsIgnoreCase("algParaList") && args.length==3)
-    	{
-    		String algorithmname = args[2];
-			System.out.printf("%s algorithm param List\n========================\n", algorithmname);
+    		if(save(info)){
+    			System.out.printf("Delete user algorithm parameter values parameter[%s]\n", paramName);
 
-    		AlgorithmInfo ainfo = findalgo(info, algorithmname);
+    		
+    			System.out.printf("<Current algorithm( = "+algorithmName+") parameter settings>--------------------------\n");
+        		
+        		//	사용자 파라메터 입력모드를 위한 대체 파라메터 map 설정
+        		Map<String, ParamInfo> algParamMap = new HashMap<String, ParamInfo>();
+        		if (info.getOptimizerConfigInfo().isUserAlgorithmParamMode()){
+            		for (ParamInfo tmpParam : info.getOptimizerConfigInfo().getUserAlgorithmParams()){
+            			algParamMap.put(tmpParam.getParamName(), tmpParam);
+            		}
+        		}
+
+        		List<ParamInfo> params = ainfo.getParams();
+        		int idxParam=0;
+        		for (ParamInfo tmpParam : params){
+        			
+        			if (algParamMap.containsKey(tmpParam.getParamName()))
+        				tmpParam = algParamMap.get(tmpParam.getParamName());
+        			
+        			if (ParamInfo.PARAM_TYPE_INPUT.equals(tmpParam.getParamType()) 
+        					|| ParamInfo.PARAM_TYPE_INPUT_TEST.equals(tmpParam.getParamType())
+        					|| ParamInfo.PARAM_TYPE_DELIMITER.equals(tmpParam.getParamType())
+        					|| ParamInfo.PARAM_TYPE_OUTPUT.equals(tmpParam.getParamType()) 
+        					|| ParamInfo.PARAM_TYPE_INDEX_LIST.equals(tmpParam.getParamType()) 
+        					|| ParamInfo.PARAM_TYPE_NUMERIC_INDEX_LIST.equals(tmpParam.getParamType()) 
+        					|| ParamInfo.PARAM_TYPE_NOMINAL_INDEX_LIST.equals(tmpParam.getParamType()) 
+        					|| ParamInfo.PARAM_TYPE_CLASS_INDEX.equals(tmpParam.getParamType())
+        					|| ParamInfo.PARAM_TYPE_MODEL_PATH.equals(tmpParam.getParamType())
+        					){
+        				System.out.printf("param-%d. paramType=[%s], paramName=[%s]\n"
+        						,idxParam, tmpParam.getParamType(), tmpParam.getParamName());
+        			}else if (ParamInfo.PARAM_TYPE_OPTIMIZE.equals(tmpParam.getParamType())){
+        				if (tmpParam.getParamValue() != null){
+            				System.out.printf("param-%d. paramType=[%s], paramName=[%s], dataType=[%s], paramValue=%s\n"
+            						,idxParam, tmpParam.getParamType(), tmpParam.getParamName(), tmpParam.getDataType(), tmpParam.getParamValue());
+        				}else{
+            				System.out.printf("param-%d. paramType=[%s], paramName=[%s], dataType=[%s], min=%s, max=%s\n"
+            						,idxParam, tmpParam.getParamType(), tmpParam.getParamName(), tmpParam.getDataType(), tmpParam.getMin(), tmpParam.getMax());
+        				}
+        			}else if (ParamInfo.PARAM_TYPE_TRAIN_ETC.equals(tmpParam.getParamType())
+        					|| ParamInfo.PARAM_TYPE_CLASSIFY_ETC.equals(tmpParam.getParamType())){
+        				System.out.printf("param-%d. paramType=[%s], paramName=[%s], paramValue=%s\n"
+        						,idxParam, tmpParam.getParamType(), tmpParam.getParamName(), tmpParam.getParamValue());
+        			}
+        			idxParam++;
+        			
+        		}
+        		
+    			System.out.printf("--------------------------------------------------------------------------\n");
+    		}
+    		else System.out.printf("Fail to delete...\n");
+    	}
+    	else if(mgr.equalsIgnoreCase("optmgr") && cmd.equalsIgnoreCase("algParaList") && args.length==2)
+    	{
+    		String algorithmName = info.getOptimizerConfigInfo().getAlgorithmName();
+
+    		AlgorithmInfo ainfo = findAlgo(info, algorithmName);
     		if(ainfo==null) {
-    			System.out.printf("algorithmName not found!\n");
+    			System.out.printf("The algorithm(= "+algorithmName+") does not exist!\n");
     			return;
     		}
+    		
+			System.out.printf("<Current algorithm( = "+algorithmName+") parameter settings>--------------------------\n");
     		
     		//	사용자 파라메터 입력모드를 위한 대체 파라메터 map 설정
     		Map<String, ParamInfo> algParamMap = new HashMap<String, ParamInfo>();
     		if (info.getOptimizerConfigInfo().isUserAlgorithmParamMode()){
-        		for (ParamInfo paramInfo : info.getOptimizerConfigInfo().getUserAlgorithmParams()){
-        			algParamMap.put(paramInfo.getParamName(), paramInfo);
+        		for (ParamInfo tmpParam : info.getOptimizerConfigInfo().getUserAlgorithmParams()){
+        			algParamMap.put(tmpParam.getParamName(), tmpParam);
         		}
     		}
 
     		List<ParamInfo> params = ainfo.getParams();
-    		int idx=0;
-    		for (ParamInfo paramInfo : params){
+    		int idxParam=0;
+    		for (ParamInfo tmpParam : params){
     			
-    			if (algParamMap.containsKey(paramInfo.getParamName()))
-    				paramInfo = algParamMap.get(paramInfo.getParamName());
+    			if (algParamMap.containsKey(tmpParam.getParamName()))
+    				tmpParam = algParamMap.get(tmpParam.getParamName());
     			
-    			if (ParamInfo.PARAM_TYPE_INPUT.equals(paramInfo.getParamType()) 
-    					|| ParamInfo.PARAM_TYPE_DELIMITER.equals(paramInfo.getParamType())
-    					|| ParamInfo.PARAM_TYPE_OUTPUT.equals(paramInfo.getParamType()) 
-    					|| ParamInfo.PARAM_TYPE_INDEX_LIST.equals(paramInfo.getParamType()) 
-    					|| ParamInfo.PARAM_TYPE_NUMERIC_INDEX_LIST.equals(paramInfo.getParamType()) 
-    					|| ParamInfo.PARAM_TYPE_NOMINAL_INDEX_LIST.equals(paramInfo.getParamType()) 
-    					|| ParamInfo.PARAM_TYPE_CLASS_INDEX.equals(paramInfo.getParamType())
-    					|| ParamInfo.PARAM_TYPE_MODEL_PATH.equals(paramInfo.getParamType())
+    			if (ParamInfo.PARAM_TYPE_INPUT.equals(tmpParam.getParamType()) 
+    					|| ParamInfo.PARAM_TYPE_INPUT_TEST.equals(tmpParam.getParamType())
+    					|| ParamInfo.PARAM_TYPE_DELIMITER.equals(tmpParam.getParamType())
+    					|| ParamInfo.PARAM_TYPE_OUTPUT.equals(tmpParam.getParamType()) 
+    					|| ParamInfo.PARAM_TYPE_INDEX_LIST.equals(tmpParam.getParamType()) 
+    					|| ParamInfo.PARAM_TYPE_NUMERIC_INDEX_LIST.equals(tmpParam.getParamType()) 
+    					|| ParamInfo.PARAM_TYPE_NOMINAL_INDEX_LIST.equals(tmpParam.getParamType()) 
+    					|| ParamInfo.PARAM_TYPE_CLASS_INDEX.equals(tmpParam.getParamType())
+    					|| ParamInfo.PARAM_TYPE_MODEL_PATH.equals(tmpParam.getParamType())
     					){
-    				System.out.printf("param-%d. paramType=[%s], paramName=[%s], paramValue=%s\n"
-    						,idx, paramInfo.getParamType(), paramInfo.getParamName(), paramInfo.getParamValue());
-    			}else if (ParamInfo.PARAM_TYPE_OPTIMIZE.equals(paramInfo.getParamType())){
-    				if (paramInfo.getParamValue() != null){
+    				System.out.printf("param-%d. paramType=[%s], paramName=[%s]\n"
+    						,idxParam, tmpParam.getParamType(), tmpParam.getParamName());
+    			}else if (ParamInfo.PARAM_TYPE_OPTIMIZE.equals(tmpParam.getParamType())){
+    				if (tmpParam.getParamValue() != null){
         				System.out.printf("param-%d. paramType=[%s], paramName=[%s], dataType=[%s], paramValue=%s\n"
-        						,idx, paramInfo.getParamType(), paramInfo.getParamName(), paramInfo.getDataType(), paramInfo.getParamValue());
+        						,idxParam, tmpParam.getParamType(), tmpParam.getParamName(), tmpParam.getDataType(), tmpParam.getParamValue());
     				}else{
         				System.out.printf("param-%d. paramType=[%s], paramName=[%s], dataType=[%s], min=%s, max=%s\n"
-        						,idx, paramInfo.getParamType(), paramInfo.getParamName(), paramInfo.getDataType(), paramInfo.getMin(), paramInfo.getMax());
+        						,idxParam, tmpParam.getParamType(), tmpParam.getParamName(), tmpParam.getDataType(), tmpParam.getMin(), tmpParam.getMax());
     				}
-    			}else if (ParamInfo.PARAM_TYPE_TRAIN_ETC.equals(paramInfo.getParamType())
-    					|| ParamInfo.PARAM_TYPE_CLASSIFY_ETC.equals(paramInfo.getParamType())){
+    			}else if (ParamInfo.PARAM_TYPE_TRAIN_ETC.equals(tmpParam.getParamType())
+    					|| ParamInfo.PARAM_TYPE_CLASSIFY_ETC.equals(tmpParam.getParamType())){
     				System.out.printf("param-%d. paramType=[%s], paramName=[%s], paramValue=%s\n"
-    						,idx, paramInfo.getParamType(), paramInfo.getParamName(), paramInfo.getParamValue());
+    						,idxParam, tmpParam.getParamType(), tmpParam.getParamName(), tmpParam.getParamValue());
     			}
-    			idx++;
+    			idxParam++;
     			
     		}
+    		
+			System.out.printf("--------------------------------------------------------------------------\n");
     		
     	}
     	else if(mgr.equalsIgnoreCase("optmgr") && cmd.equalsIgnoreCase("run") && args.length==2)
     	{
-    		System.out.println("Optimizer Start!!!!");
     		
     		GAMain.optimize(info);
     		
     		
-    		System.out.println("Optimizer end!!!!");
     	}
-//    	else if(mgr.equalsIgnoreCase("optmgr") && cmd.equalsIgnoreCase("add") && args.length==6) // nominal
-//    	{
-//    		String algorithmname = args[2];
-//    		String paramname = args[3];
-//    		String type =  args[4];
-//    		String defaultvalue =  args[5];
-//    		String values =  args[6];
-//    		
-//    		AlgorithmInfo ainfo = findalgo(info, algorithmname);
-//    		if(ainfo==null) {
-//    			System.out.printf("algorithmname not found!\n");
-//    			return;
-//    		}
-//    		
-//    		if(ainfo.params ==null) ainfo.params = new ArrayList<ParamInfo>();  
-//    		
-//    		ParamInfo pi = new ParamInfo(paramname, type, defaultvalue, values);
-//    		ainfo.params.add(pi);
-//    		
-//    		if(save(info)) System.out.printf("Add parameter[%s] name=%s, type=%s default=%s, values=[%s]\n", algorithmname, paramname, type, defaultvalue, values);
-//    		else System.out.printf("Add Fail..\n");
-//    	}
-//    	else if(mgr.equalsIgnoreCase("optmgr") && cmd.equalsIgnoreCase("add") && args.length==7) // numeric
-//    	{
-//    		String algorithmname = args[2];
-//    		String paramname = args[3];
-//    		String type =  args[4];
-//    		String defaultvalue =  args[5];
-//    		String min =  args[6];
-//    		String max =  args[7];
-//    		
-//    		AlgorithmInfo ainfo = findalgo(info, algorithmname);
-//    		if(ainfo==null) {
-//    			System.out.printf("algorithmname not found!\n");
-//    			return;
-//    		}
-//    		
-//    		if(ainfo.params ==null) ainfo.params = new ArrayList<ParamInfo>();  
-//    		
-//    		ParamInfo pi = new ParamInfo(paramname, type, defaultvalue, min, max);
-//    		ainfo.params.add(pi);
-//    		
-//    		if(save(info)) System.out.printf("Add parameter[%s] name=%s, type=%s default=%s, min=%s, max=%s\n", algorithmname, paramname, type, defaultvalue, min, max);
-//    		else System.out.printf("Add Fail..\n");
-//    	}
-//    	else if(mgr.equalsIgnoreCase("optmgr") && cmd.equalsIgnoreCase("list") && args.length==3)
-//    	{
-//    		String algorithmname = args[2];
-//			System.out.printf("%s algorithm param List\n========================\n", algorithmname);
-//
-//    		AlgorithmInfo ainfo = findalgo(info, algorithmname);
-//    		if(ainfo==null) {
-//    			System.out.printf("algorithmname not found!\n");
-//    			return;
-//    		}
-//
-//			if(ainfo.params!=null) for(int i = 0; i<ainfo.params.size(); i++)
-//			{
-//				String attrs =  String.format("min=%s, max=%s", ainfo.params.get(i).min, ainfo.params.get(i).max);
-//				if(ainfo.params.get(i).type.equalsIgnoreCase("nominal")) attrs =  String.format("values=[%s]", ainfo.params.get(i).values);
-//				System.out.printf("param%d. paramname=[%s], type=[%s], default=%s, %s\n", i+1, ainfo.params.get(i).paramName, ainfo.params.get(i).type, ainfo.params.get(i).defaultValue, attrs);
-//			}
-//    	}
-//    	else if(mgr.equalsIgnoreCase("optmgr") && cmd.equalsIgnoreCase("delete") && args.length==4)
-//    	{
-//    		String algorithmname = args[2];
-//    		String paramname = args[3];
-//    		
-//    		AlgorithmInfo ainfo = findalgo(info, algorithmname);
-//    		if(ainfo==null) {
-//    			System.out.printf("algorithmname not found!\n");
-//    			return;
-//    		}
-//    		
-//    		if(ainfo.params!=null) for(int i = 0; i<ainfo.params.size(); i++)
-//    		{
-//    			if (ainfo.params.get(i).paramName.equals(paramname))
-//    			{
-//    				ainfo.params.remove(i);
-//        			if(save(info))
-//        			{
-//    					System.out.printf("algorithm명=[%s], param명=[%s] deleted\n", algorithmname, paramname);
-//        				return;
-//        			}
-//    				
-//    			}
-//    			
-//    		}
-//    			
-//			System.out.printf("[%s] paramname not found!!\n", paramname);			
-//    	}
-    	else
-			System.out.printf("파라미터가 올바르지 않습니다. 확인바랍니다.!!\n");
+    	else{
+			System.out.printf("Wrong parameters!!! Please refer to the below\n");
+    		
+			//	pool 관련 
+    		System.out.printf("\t- poolmgr add <pool name> <jar path>\n");
+//    		System.out.printf("\t- poolmgr delete <pool name>\n");
+    		System.out.printf("\t- poolmgr list\n");
+    		
+    		// algorithm 관련
+    		System.out.printf("\t- algomgr add <pool name> <algorithm name>\n");
+//    		System.out.printf("\t- algomgr delete <pool name> <algorithm name>\n");
+    		System.out.printf("\t- algomgr list <pool name>\n");
+    		System.out.printf("\t- algomgr setParamFormat <algorithm name> <param format: ankus | mahoutRF>\n");
+    		System.out.printf("\t- algomgr setTrainClassName <algorithm name> <class name>\n");
+    		System.out.printf("\t- algomgr setClassifyClassName <algorithm name> <class name>\n");
+    		System.out.printf("\t- algomgr setParam <algorithm name> input <parameter name>\n");
+    		System.out.printf("\t- algomgr setParam <algorithm name> inputTest <parameter name>\n");
+    		System.out.printf("\t- algomgr setParam <algorithm name> delimiter <parameter name>\n");
+    		System.out.printf("\t- algomgr setParam <algorithm name> output <parameter name>\n");
+    		System.out.printf("\t- algomgr setParam <algorithm name> indexList <parameter name>\n");
+    		System.out.printf("\t- algomgr setParam <algorithm name> numericIndexList <parameter name>\n");
+    		System.out.printf("\t- algomgr setParam <algorithm name> nominalIndexList <parameter name>\n");
+    		System.out.printf("\t- algomgr setParam <algorithm name> classIndex <parameter name>\n");
+    		System.out.printf("\t- algomgr setParam <algorithm name> modelPath <parameter name>\n");
+    		System.out.printf("\t- algomgr setParam <algorithm name> optimize <parameter name> <data type> <min value> <max value>\n");
+    		System.out.printf("\t- algomgr setParam <algorithm name> trainEtc <parameter name> [<parameter value>] | '']\n");
+    		System.out.printf("\t- algomgr setParam <algorithm name> classifyEtc <parameter name> [<parameter value>] | '']\n");
+    		System.out.printf("\t- algomgr delParam <algorithm name> <parameter name>\n");
+    		System.out.printf("\t- algomgr setClassifyOutputRelPath <algorithm name> <relative path on each popolulation output directory>\n");
+//    		System.out.printf("\t- algomgr delClassifyOutputRelPath <algorithm name>\n");
+    		System.out.printf("\t- algomgr setParamValueDelimiter <algorithm name> <delimiter>\n");
+//    		System.out.printf("\t- algomgr delParamValueDelimiter <algorithm name>\n");
+    		System.out.printf("\t- algomgr setClassifyOutputMode <algorithm name> <mode : lableWithInput | indexWithoutInput>\n");
+    		System.out.printf("\t- algomgr setModelAbsPath <algorithm name> <aboslute path to a trained model>\n");
+    		System.out.printf("\t- algomgr delModelAbsPath <algorithm name>\n");
+    		System.out.printf("\t- algomgr setModelRelPath <algorithm name> <relative path to a trained model on each popoluation output directory>\n");
+    		System.out.printf("\t- algomgr delModelRelPath <algorithm name>\n");
+    		
+    		
+    		//	optimizer 관련
+    		System.out.printf("\t- optmgr infSet <input data file path> <delimiter>\n");
+    		System.out.printf("\t- optmgr dataList \n");
+    		System.out.printf("\t- optmgr infNumericIndexList <index list delimitted with comma(,)>\n");
+    		System.out.printf("\t- optmgr infNominalIndexList <index list delimitted with comma(,)>\n");
+    		System.out.printf("\t- optmgr infClass <class index> <class label list delimitted with comma(,)>\n");
+    		System.out.printf("\t- optmgr setMultiThreadEval [true | false]\n");
+    		System.out.printf("\t- optmgr algSet <algorithm name>\n");
+    		System.out.printf("\t- optmgr algIniPara [random | user]\n");
+    		System.out.printf("\t- optmgr algParaSet <parameter name> [<parameter value> | '']\n");
+    		System.out.printf("\t- optmgr algParaDel <parameter name>\n");
+    		System.out.printf("\t- optmgr algParaList \n");
+    		System.out.printf("\t- optmgr genSet <parameter name : mp | cp | ps | rs | tc_maxg | tc_minf | bs> <parameter value> \n");
+    		System.out.printf("\t- optmgr genSetList \n");
+    		System.out.printf("\t- optmgr optmgr run \n");
+    		
+    		return;
+    	}
     		
     	
     }

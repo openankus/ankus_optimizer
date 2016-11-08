@@ -63,7 +63,7 @@ public class Chrom {
 		int reVal = 0;
 		
 		if(this.chromosome == null){
-			System.out.println("오류코드 00001");
+			OptimizerLogger.println("error code 00001");
 			System.exit(1);
 		}else{
 			reVal = this.chromosome.length;

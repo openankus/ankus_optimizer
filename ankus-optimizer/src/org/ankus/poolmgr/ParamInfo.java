@@ -12,9 +12,14 @@ package org.ankus.poolmgr;
 public class ParamInfo implements Cloneable{	
 
 	/**
-	 * 입력파일 기본 파라메터 유형
+	 * 훈련 데이터 입력파일 기본 파라메터 유형
 	 */
 	public static final String PARAM_TYPE_INPUT = "input";
+	
+	/**
+	 * 테스트 데이터 입력파일 기본 파라메터 유형
+	 */
+	public static final String PARAM_TYPE_INPUT_TEST = "inputTest";
 	
 	/**
 	 * 구분자 기본 파라메터 유형

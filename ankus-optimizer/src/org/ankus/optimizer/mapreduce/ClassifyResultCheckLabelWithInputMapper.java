@@ -53,15 +53,15 @@ public class ClassifyResultCheckLabelWithInputMapper extends Mapper<LongWritable
 
 		int classIdx = context.getConfiguration().getInt(ArgumentsConstants.CLASS_INDEX, -1);
 		String delimiter = context.getConfiguration().get(ArgumentsConstants.DELIMITER);
-		System.out.println("구분자 : "+classIdx);
-		System.out.println("구분자 : "+delimiter);
+//		System.out.println("구분자 : "+classIdx);
+//		System.out.println("구분자 : "+delimiter);
 		
 		int factValueIdx = classIdx;
 		int estimateValueIdx = classIdx + 1;
 		String factValue = null;
 		String estimateValue = null;
-		logger.debug("정확도 계산대상 문자열: " +value.toString());
-		logger.info("정확도 계산대상 문자열: " +value.toString());
+//		logger.debug("정확도 계산대상 문자열: " +value.toString());
+//		logger.info("정확도 계산대상 문자열: " +value.toString());
 		StringTokenizer tokenizer = new StringTokenizer(value.toString(), delimiter);
 		int idx = 0;
 		while (tokenizer.hasMoreTokens()){

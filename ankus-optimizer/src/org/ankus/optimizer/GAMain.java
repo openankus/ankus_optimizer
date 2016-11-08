@@ -7,6 +7,7 @@ import java.io.InputStreamReader;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -26,8 +27,6 @@ import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * 최적화 알고리즘 실행 메인
@@ -40,7 +39,6 @@ import org.slf4j.LoggerFactory;
  */
 public class GAMain{
 
-	private Logger logger = LoggerFactory.getLogger(GAMain.class);
 
 	
 	public static void main(String[] args) throws Exception {
@@ -55,6 +53,13 @@ public class GAMain{
 	 * @throws Exception
 	 */
 	public static void optimize(ManagerData managerData) throws Exception{
+		
+		OptimizerLogger.println("Optimizer Start!!!!");
+		
+		
+		
+		
+		
 		GA ga	= null;
 		
 //		//GA 환경변수 설정
@@ -79,34 +84,58 @@ public class GAMain{
 		float 	crossProb = optConfig.getCrossProbabilty();
 		float	mutProb = optConfig.getMutationProbabilty();
 		int		binaryStrSize = optConfig.getBinaryStringSize();	// 이진문자열 크기
-		String  inputFile = optConfig.getInput().getPath();
+		String  inputFile = optConfig.getDataFilePath();
 		
 		
 		// GA 객체 생성
 		ga = new GA();
+		ga.setMultiThreadEval(optConfig.isMultiThreadEval());
 		ga.setParameters(popSize,seed,crossProb,mutProb);
 
+		// 수행결과 출력 디렉토리 환경변수
+		String userOutputBase = System.getenv("OPTMGR_OUTFSET");
+		if (userOutputBase == null || "".equals(userOutputBase.trim())){
+			userOutputBase = "";
+		}
+		
 		//	output root 디렉토리 설정
 		Calendar now = Calendar.getInstance();
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
-		String outputRootBase = "/OptiOutput_"+sdf.format(now.getTime());
+		String outputRootBase = userOutputBase+File.separator+"OptiOutput_"+sdf.format(now.getTime());
 		
 		
     	//--<입력데이터의 속성 개수 추출 및 데이터 객체 생성>---
-		//	속성개수
-    	int numAttri = 0;	// 속성 개수
-    	int classIndex = optConfig.getInput().getClassIndex();	// 클래스 인덱스
-		String delimiter = optConfig.getInput().getDelimiter();	// 데이터 컬럼 구분자
-    	numAttri = getNumAttribute(inputFile, delimiter);
-    	System.out.println("속성 개수:"+numAttri);
+    	int classIndex = optConfig.getClassIndex();	// 클래스 인덱스
+		String delimiter = optConfig.getDelimiter();	// 데이터 컬럼 구분자
 
-    	//	데이터 객체 생성
-    	ArrayList<Integer> attributeIndexList = new ArrayList<Integer>();
-    	for (int idx=0; idx<numAttri; idx++){
-    		if (idx != classIndex)
-    			attributeIndexList.add(idx);
+		//	데이터의 전체 컬럼 개수
+		int numAllAttr = getNumAttribute(inputFile, delimiter);
+    	OptimizerLogger.println("Total number of attributes in the data file:"+numAllAttr);
+
+		//	테스트 및 훈련에 사용할 속성개수
+    	int numAttri = optConfig.getNumericIndexList().size() + optConfig.getNominalIndexList().size();	// 테스트 및 훈련에 사용할 속성개수
+    	OptimizerLogger.println("The number of attribuates to be used in trainig and testing:"+numAttri);
+
+
+    	//	수치형 속성 인덱스 목록
+    	ArrayList<Integer> numericIndexList = new ArrayList<Integer>();
+    	for (String index : optConfig.getNumericIndexList()){
+    		Integer val = Integer.parseInt(index);
+    		if (classIndex != val)
+    			numericIndexList.add(val);
     	}
-    	Instances data = new Instances(inputFile, delimiter, attributeIndexList, classIndex);
+    	Collections.sort(numericIndexList);
+    	//	기호형 속성 인덱스 목록
+    	ArrayList<Integer> nominalIndexList = new ArrayList<Integer>();
+    	for (String index : optConfig.getNominalIndexList()){
+    		Integer val = Integer.parseInt(index);
+    		if (classIndex != val)
+    			nominalIndexList.add(val);
+    	}
+    	Collections.sort(nominalIndexList);
+    	
+    	//	데이터 객체 생성
+    	Instances data = new Instances(inputFile, delimiter, numAllAttr, numericIndexList, nominalIndexList, classIndex, optConfig.getClassLabelList());
     	
 		
     	// 훈련 및 테스트 데이터 파일 생성 및 데이터 객체 생성
@@ -115,7 +144,7 @@ public class GAMain{
 		try{
     		// 클래스 별 훈련 및 테스트 데이터를 골고루 추출하기 위한 토글 맵
     		Map<String,Boolean> toggleMap = new HashMap<String,Boolean>();
-    		List<String> classLabelList = managerData.getOptimizerConfigInfo().getInput().getClassLabelList();
+    		List<String> classLabelList = managerData.getOptimizerConfigInfo().getClassLabelList();
     		for (String label : classLabelList){
     			toggleMap.put(label, true);
     		}
@@ -164,10 +193,10 @@ public class GAMain{
     		
     		
 		}catch (IOException ex){
-			throw new OptimizerException("입력데이터의 클래스별 개수 추출 중 에러발생...", ex);
+			throw new OptimizerException("Fail to check number of class labels...", ex);
 		}
-    	Instances trainData = new Instances(trainDataPath, delimiter, attributeIndexList, classIndex);
-    	Instances testData = new Instances(testDataPath, delimiter, attributeIndexList, classIndex);
+    	Instances trainData = new Instances(trainDataPath, delimiter, numAllAttr, numericIndexList, nominalIndexList, classIndex, optConfig.getClassLabelList());
+    	Instances testData = new Instances(testDataPath, delimiter, numAllAttr, numericIndexList, nominalIndexList, classIndex, optConfig.getClassLabelList());
     	
     	
 		Model model = new Model(data,trainData, testData);
@@ -182,7 +211,7 @@ public class GAMain{
 //		ArrayList<Parameter> paramList = new ArrayList<Parameter>();
 //		switch("KNN"){
 //		case "C45":
-//			System.out.println("kNN");
+//			OptimizerLogger.println("kNN");
 //			algorithm = 
 //					new AlgorithmProcessExec(
 //							"/home/hadoop/hadoop2/bin/hadoop jar /mnt/hgfs/shared_for_vm/ankus-core2.jar C45"
@@ -197,7 +226,7 @@ public class GAMain{
 //			paramList.add(new ParameterInt(ArgumentsConstants.MIN_LEAF_DATA,2,80));
 //			break;
 //		case "MLP":
-//			System.out.println("MLP");			
+//			OptimizerLogger.println("MLP");			
 //			algorithm = 
 //					new AlgorithmProcessExec(
 //							"/home/hadoop/hadoop2/bin/hadoop jar /mnt/hgfs/shared_for_vm/ankus-core2.jar MultilayerPerceptron"
@@ -214,7 +243,7 @@ public class GAMain{
 //			
 //			break;
 //		case "KNN":
-//			System.out.println("KNN");	
+//			OptimizerLogger.println("KNN");	
 //			algorithm = 
 //					new AlgorithmProcessExec(
 //							"/home/hadoop/hadoop2/bin/hadoop jar /mnt/hgfs/shared_for_vm/ankus-core2.jar kNN"
@@ -228,7 +257,7 @@ public class GAMain{
 //			paramList.add(new ParameterInt(ArgumentsConstants.K_CNT,1,50));
 //			break;
 //		case "RandomForest":
-//			System.out.println("RandomForest");	
+//			OptimizerLogger.println("RandomForest");	
 ////			algorithm = new RForest();
 //			paramList.add(new ParameterFloat("MD",0.0f,50.0f));
 //			paramList.add(new ParameterFloat("numDT",1.0f,100.0f));
@@ -250,7 +279,7 @@ public class GAMain{
 	    		}
 			}
 			
-			AlgorithmInfo algInfo = App.findalgo(managerData, optConfig.getAlgorithmName());
+			AlgorithmInfo algInfo = App.findAlgo(managerData, optConfig.getAlgorithmName());
 			List<ParamInfo> params = algInfo.getParams();
 			for (ParamInfo paramInfo : params){
 				if (algParamMap.containsKey(paramInfo.getParamName()))
@@ -261,12 +290,16 @@ public class GAMain{
     	
     	
     	//----<알고리즘 프로세스 생성>----------
-		PoolInfo poolInfo = App.findpool(managerData, optConfig.getPoolName());
-		AlgorithmInfo algInfo = App.findalgo(managerData, optConfig.getAlgorithmName());
+		PoolInfo poolInfo = App.findPool(managerData, optConfig.getPoolName());
+		AlgorithmInfo algInfo = App.findAlgo(managerData, optConfig.getAlgorithmName());
 		
+		String paramFormat = AlgorithmInfo.PARAM_FORMAT_ANKUS;
+		if (algInfo.getParamFormat() != null){
+			paramFormat = algInfo.getParamFormat();
+		}
 		String hadoopHome = System.getenv("HADOOP_HOME");
 		if (hadoopHome == null){
-			throw new OptimizerException("HADOOP_HOME 환경변수 부재!!!");
+			throw new OptimizerException("The environment variable of HADOOP_HOME does not exist!!!");
 		}
 		StringBuffer trainCommandSb = new StringBuffer();
 		trainCommandSb.append(hadoopHome).append(File.separator).append("bin").append(File.separator).append("hadoop");
@@ -289,7 +322,7 @@ public class GAMain{
 		classifyCommandSb.append(hadoopHome).append(File.separator).append("bin").append(File.separator).append("hadoop");
 		classifyCommandSb.append(" ").append("jar");
 		classifyCommandSb.append(" ").append(poolInfo.getFileName());
-		classifyCommandSb.append(" ").append(algInfo.getTrainClassName());
+		classifyCommandSb.append(" ").append(algInfo.getClassifyClassName());
 		for (ParamInfo paramInfo : paramInfoList){
 			if (ParamInfo.PARAM_TYPE_CLASSIFY_ETC.equals(paramInfo.getParamType())){
 				classifyCommandSb.append(" ").append(paramInfo.getParamName());
@@ -298,35 +331,72 @@ public class GAMain{
 			}
 		}
 		String classifyCommand = classifyCommandSb.toString();
-		String paramInputName = getParamInfo(ParamInfo.PARAM_TYPE_INPUT, paramInfoList).getParamName();
-		if (paramInputName == null) paramInputName = "-input";
-		String paramDelimiterName = getParamInfo(ParamInfo.PARAM_TYPE_DELIMITER, paramInfoList).getParamName();
-		if (paramDelimiterName == null) paramDelimiterName = "-delimiter";
-		String paramOutputName = getParamInfo(ParamInfo.PARAM_TYPE_OUTPUT, paramInfoList).getParamName();
-		if (paramOutputName == null) paramOutputName = "-ouput";
-		String paramIndexListName = getParamInfo(ParamInfo.PARAM_TYPE_INDEX_LIST, paramInfoList).getParamName();
-		if (paramIndexListName == null) paramIndexListName = "-indexList";
-		String paramClassIndexName = getParamInfo(ParamInfo.PARAM_TYPE_CLASS_INDEX, paramInfoList).getParamName();;
-		if (paramClassIndexName == null) paramClassIndexName = "-classIndex";
-		String paramTrainedModelPathName = getParamInfo(ParamInfo.PARAM_TYPE_MODEL_PATH, paramInfoList).getParamName();;
-		if (paramClassIndexName == null) paramClassIndexName = "-modelPath";
-		String paramValueDelimiter = algInfo.getParamValueDelimiter();
-		if (paramValueDelimiter == null) paramValueDelimiter = ",";
-		String classifyOutputRelPath = algInfo.getClassifyOutputRelPath();
-		if (classifyOutputRelPath == null) classifyOutputRelPath = "/classifying_result/part-r-00000";
+		String paramInputName = "-input";
+		if (getParamInfo(ParamInfo.PARAM_TYPE_INPUT, paramInfoList) != null){
+			paramInputName = getParamInfo(ParamInfo.PARAM_TYPE_INPUT, paramInfoList).getParamName();
+		}
+		String paramInputTestName = "-input";
+		if (getParamInfo(ParamInfo.PARAM_TYPE_INPUT_TEST, paramInfoList) != null){
+			paramInputTestName = getParamInfo(ParamInfo.PARAM_TYPE_INPUT_TEST, paramInfoList).getParamName();
+		}
+		String paramDelimiterName = "-delimiter";
+		if (getParamInfo(ParamInfo.PARAM_TYPE_DELIMITER, paramInfoList) != null){
+			paramDelimiterName = getParamInfo(ParamInfo.PARAM_TYPE_DELIMITER, paramInfoList).getParamName();
+		}
+		String paramOutputName = "-output";
+		if (getParamInfo(ParamInfo.PARAM_TYPE_OUTPUT, paramInfoList) != null){
+			paramOutputName = getParamInfo(ParamInfo.PARAM_TYPE_OUTPUT, paramInfoList).getParamName();
+		}
+		String paramIndexListName = null;
+		if ( getParamInfo(ParamInfo.PARAM_TYPE_INDEX_LIST, paramInfoList) != null){
+			paramIndexListName = getParamInfo(ParamInfo.PARAM_TYPE_INDEX_LIST, paramInfoList).getParamName();
+		}
+		String paramNumericIndexListName = null;
+		if (getParamInfo(ParamInfo.PARAM_TYPE_NUMERIC_INDEX_LIST, paramInfoList) != null){
+			paramNumericIndexListName = getParamInfo(ParamInfo.PARAM_TYPE_NUMERIC_INDEX_LIST, paramInfoList).getParamName();
+		}
+		String paramNominalIndexListName = null;
+		if (getParamInfo(ParamInfo.PARAM_TYPE_NOMINAL_INDEX_LIST, paramInfoList) != null){
+			paramNominalIndexListName = getParamInfo(ParamInfo.PARAM_TYPE_NOMINAL_INDEX_LIST, paramInfoList).getParamName();
+		}
+		String paramClassIndexName = "-classIndex";
+		if (getParamInfo(ParamInfo.PARAM_TYPE_CLASS_INDEX, paramInfoList) != null){
+			paramClassIndexName = getParamInfo(ParamInfo.PARAM_TYPE_CLASS_INDEX, paramInfoList).getParamName();
+		}
+		String paramTrainedModelPathName = "-modelPath";
+		if (getParamInfo(ParamInfo.PARAM_TYPE_MODEL_PATH, paramInfoList) != null){
+			paramTrainedModelPathName = getParamInfo(ParamInfo.PARAM_TYPE_MODEL_PATH, paramInfoList).getParamName();
+		}
+		String paramValueDelimiter = ",";
+		if (algInfo.getParamValueDelimiter() != null){
+			paramValueDelimiter = algInfo.getParamValueDelimiter();
+		}
+		String classifyOutputMode = null;
+		if (algInfo.getClassifyOutputMode() != null){
+			classifyOutputMode = algInfo.getClassifyOutputMode();
+		}
+		String classifyOutputRelPath = "/classifying_result/part-r-00000";
+		if (algInfo.getClassifyOutputRelPath() != null){
+			classifyOutputRelPath = algInfo.getClassifyOutputRelPath();
+		}
 		String modelAbsPath = algInfo.getModelAbsPath();
 		String modelRelPath = algInfo.getModelRelPath();
 		AlgorithmProcessExec algorithm = 
 				new AlgorithmProcessExec(
+						paramFormat,
 						trainCommand, 
 						classifyCommand, 
 						paramInputName, 
+						paramInputTestName,
 						paramDelimiterName, 
 						paramOutputName, 
-						paramIndexListName, 
+						paramIndexListName,
+						paramNumericIndexListName,
+						paramNominalIndexListName,
 						paramClassIndexName,
 						paramTrainedModelPathName,
 						paramValueDelimiter, 
+						classifyOutputMode,
 						classifyOutputRelPath,
 						modelAbsPath,
 						modelRelPath);
@@ -436,7 +506,7 @@ public class GAMain{
 			
 			// 개체초기화
 			ga.setInitialPopulation(numAttri,numAlgPara,binaryStrSize,classIndex);
-			//System.out.println("개체 초기화 완료...");
+			//OptimizerLogger.println("개체 초기화 완료...");
 			
 			// 개체평가
 			String outputBase = outputRootBase+"/generation_"+String.format("%05d", generation);
@@ -452,13 +522,13 @@ public class GAMain{
 			
 			
 			
-			//System.out.println(_ga.toStringChroms());
-			//System.out.println("----- elitist()");
-			//System.out.println(_ga.getelitist().toStringGene()+" - "+_ga.getelitist().getFitness());
+			//OptimizerLogger.println(_ga.toStringChroms());
+			//OptimizerLogger.println("----- elitist()");
+			//OptimizerLogger.println(_ga.getelitist().toStringGene()+" - "+_ga.getelitist().getFitness());
 			//System.exit(1);
 
-			System.out.println(" ************************************ "+generation+" 세대: "+ga.getelitist().getFitness());
-			//System.out.println(_ga.getelitist().toStringGene());
+			OptimizerLogger.println(" ************************************ "+generation+" 세대: "+ga.getelitist().getFitness());
+			//OptimizerLogger.println(_ga.getelitist().toStringGene());
 			//System.exit(1);
 			
 			do{
@@ -467,32 +537,32 @@ public class GAMain{
 
 				// 개체선택
 				ga.selectMethod();
-				//System.out.println("개체 선택 완료..");
+				//OptimizerLogger.println("개체 선택 완료..");
 			
 				// 교배 확률
 				ga.crossover();
-				//System.out.println("개체 교배 완료..");
+				//OptimizerLogger.println("개체 교배 완료..");
 			
 				// 돌연변이 확률
 				ga.mutation(classIndex);
-				//System.out.println("개체 돌연변이 완료..");
+				//OptimizerLogger.println("개체 돌연변이 완료..");
 
 				
 				// 개체평가
-				//System.out.println(_ga.toStringChroms());
+				//OptimizerLogger.println(_ga.toStringChroms());
 				outputBase = outputRootBase+"/generation_"+String.format("%05d", generation);
 				popInfoListPath = ga.evaluation(model,algorithm,parameters, outputBase);
 				
 				// 적합도 내림차순에 의한 개체평가결과 출력
 				sortedPopInfoListPath = outputBase+"/"+Constants.FILE_NAME_ORDERED_POP_INFO_LIST;
 				ga.writeSortedPopInfoList(popInfoListPath, sortedPopInfoListPath);
-				//System.out.println("개체평가 완료..");
+				//OptimizerLogger.println("개체평가 완료..");
 				
 				
-				System.out.println(" ************************************ "+generation+" 세대: "+ga.getelitist().getFitness());
+				OptimizerLogger.println(" ************************************ "+generation+" 세대: "+ga.getelitist().getFitness());
 
 				if(generation == maxGeneration){
-					System.out.println(ga.getelitist().toStringGene());
+					OptimizerLogger.println(ga.getelitist().toStringGene());
 					ga.getelitist().toStringModel();
 				}
 				
@@ -506,9 +576,9 @@ public class GAMain{
 			Date endTime = Calendar.getInstance().getTime();
 			
 			long lTime = (long) ((endTime.getTime() - startTime.getTime())/(60.0*1000.0));
-			System.out.println("Start Time: "+ startTime.toString());
-			System.out.println("End Time: "+endTime.toString());
-			System.out.println("TIME : " + lTime + "분");
+			OptimizerLogger.println("Start Time: "+ startTime.toString());
+			OptimizerLogger.println("End Time: "+endTime.toString());
+			OptimizerLogger.println("TIME : " + lTime + "분");
 			
 			//	소요시간 출력
 			{
@@ -526,8 +596,11 @@ public class GAMain{
 
 			
 		}else{
-			System.out.println("오류 00001");
+			OptimizerLogger.println("Error code 00001");
 		}
+
+	
+		OptimizerLogger.println("Optimizer end!!!!");
 	}
 	
 	/**

@@ -14,7 +14,21 @@ import java.util.List;
  *
  */
 public class AlgorithmInfo {
+
+	/**
+	 * 파라메터 형식 - ankus
+	 */
+	public static final String PARAM_FORMAT_ANKUS = "ankus";
 	
+	/**
+	 * 파라메터 형식 - mahout random forest
+	 */
+	public static final String PARAM_FORMAT_MAHOUT_RF = "mahoutRF";
+	
+	/**
+	 * 파라메터 형식 - 사용자 구현
+	 */
+	public static final String PARAM_FORMAT_USER = "user";
 
 	/**
 	 * 분류결과 출력파일 모드 - 입력데이터와 함께 클래스 레이블로 출력 
@@ -31,11 +45,6 @@ public class AlgorithmInfo {
 	 */
 	private String algorithmName;
 	
-//	/**
-//	 * 클래스 이름
-//	 */
-//	private String className;
-	
 	/**
 	 * 모델학습 클래스 이름
 	 */
@@ -46,6 +55,10 @@ public class AlgorithmInfo {
 	 */
 	private String classifyClassName;
 	
+	/**
+	 * 파라메터 형식
+	 */
+	private String paramFormat;
 	
 	
 	/**
@@ -81,11 +94,9 @@ public class AlgorithmInfo {
 	
 	public AlgorithmInfo() {}
 	
-	public AlgorithmInfo(String algorithmName, String trainClassName, String classifyClassName)
+	public AlgorithmInfo(String algorithmName)
 	{
 		this.algorithmName = algorithmName;
-		this.trainClassName = trainClassName;
-		this.classifyClassName = classifyClassName;
 	}
 
 
@@ -163,6 +174,16 @@ public class AlgorithmInfo {
 	public void setModelRelPath(String modelRelPath) {
 		this.modelRelPath = modelRelPath;
 	}
+
+	public String getParamFormat() {
+		return paramFormat;
+	}
+
+	public void setParamFormat(String paramFormat) {
+		this.paramFormat = paramFormat;
+	}
+
+	
 	
 	
 	

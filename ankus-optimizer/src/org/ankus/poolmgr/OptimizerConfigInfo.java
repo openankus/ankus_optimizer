@@ -15,9 +15,34 @@ import java.util.List;
 public class OptimizerConfigInfo {
 	
 	/**
-	 * 입력 데이터(알고리즘 학습 및 테스트용)
+	 * 데이터 경로
 	 */
-	private DataInfo input;
+	private String dataFilePath;
+	
+	/**
+	 * 컬럼 구분자
+	 */
+	private String delimiter;
+	
+	/**
+	 * 수치형 속성 인덱스 목록(해당 값 설정시, 속성 인덱스목록은 무시...)
+	 */
+	private List<String> numericIndexList = new ArrayList<String>();
+	
+	/**
+	 * 기호형 속성 인덱스 목록(해당 값 설정시, 속성 인덱스목록은 무시...)
+	 */
+	private List<String> nominalIndexList = new ArrayList<String>();
+	
+	/**
+	 * 클래스 컬럼 인덱스
+	 */
+	private int classIndex;
+	
+	/**
+	 * 클래스 레이블 목록
+	 */
+	private List<String> classLabelList = new ArrayList<String>();
 	
 	/**
 	 * 분류알고리즘 Pool
@@ -75,14 +100,60 @@ public class OptimizerConfigInfo {
 	 */
 	private List<ParamInfo> userAlgorithmParams = new ArrayList<ParamInfo>();
 	
+	/**
+	 * 멀티스레드 알고리즘 평가 여부
+	 */
+	private boolean multiThreadEval = true;
 	
-	public DataInfo getInput() {
-		return input;
+	
+	public String getDataFilePath() {
+		return dataFilePath;
 	}
 
-	public void setInput(DataInfo dataInfo) {
-		this.input = dataInfo;
+	public void setDataFilePath(String dataFilePath) {
+		this.dataFilePath = dataFilePath;
 	}
+
+	public String getDelimiter() {
+		return delimiter;
+	}
+
+	public void setDelimiter(String delimiter) {
+		this.delimiter = delimiter;
+	}
+	
+	public int getClassIndex() {
+		return classIndex;
+	}
+
+	public void setClassIndex(int classIndex) {
+		this.classIndex = classIndex;
+	}
+
+	public List<String> getClassLabelList() {
+		return classLabelList;
+	}
+
+	public void setClassLabelList(List<String> classLabelList) {
+		this.classLabelList = new ArrayList<String>(classLabelList);
+	}
+
+	public List<String> getNumericIndexList() {
+		return numericIndexList;
+	}
+
+	public void setNumericIndexList(List<String> numericIndexList) {
+		this.numericIndexList = numericIndexList;
+	}
+
+	public List<String> getNominalIndexList() {
+		return nominalIndexList;
+	}
+
+	public void setNominalIndexList(List<String> nominalIndexList) {
+		this.nominalIndexList = nominalIndexList;
+	}
+
 
 	public String getPoolName() {
 		return poolName;
@@ -170,6 +241,14 @@ public class OptimizerConfigInfo {
 
 	public void setUserAlgorithmParams(List<ParamInfo> userAlgorithmParams) {
 		this.userAlgorithmParams = new ArrayList<ParamInfo>(userAlgorithmParams);
+	}
+
+	public boolean isMultiThreadEval() {
+		return multiThreadEval;
+	}
+
+	public void setMultiThreadEval(boolean multiThreadEval) {
+		this.multiThreadEval = multiThreadEval;
 	}
 	
 	

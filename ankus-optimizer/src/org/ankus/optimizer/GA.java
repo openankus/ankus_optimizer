@@ -17,8 +17,6 @@ import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 
 
@@ -33,8 +31,12 @@ import org.slf4j.LoggerFactory;
  */
 public class GA {
 	
-	private Logger logger = LoggerFactory.getLogger(GA.class);
 	
+	
+	/**
+	 * 멀티스레드 알고리즘 평가 여부
+	 */
+	private boolean multiThreadEval = true;
 
 	private int 		popSize;			// 개체크기
 	private Random 		random;				// 난수 발생 객체
@@ -49,6 +51,13 @@ public class GA {
 	
 	
 	
+	public boolean isMultiThreadEval() {
+		return multiThreadEval;
+	}
+
+	public void setMultiThreadEval(boolean multiThreadEval) {
+		this.multiThreadEval = multiThreadEval;
+	}
 	
 	public int getPopSize() {
 		return popSize;
@@ -121,7 +130,7 @@ public class GA {
 		
 		for(int i=0 ; i<this.popSize ; i++){
 			this.pop[i] = new Chrom(this.random, numAttri+(numAlgPara*binaryStrSize), classIndex);
-//			System.out.println(i+" 개체: "+ this._pop[i].toStringGene());
+//			OptimizerLogger.println(i+" 개체: "+ this._pop[i].toStringGene());
 		}
 		
 		this.mask = new int [this.binaryStrSize];
@@ -341,7 +350,7 @@ public class GA {
 //			
 //			if(usedAttriCount == 1)
 //			{
-////				System.out.println(i+ " 개체에서  모델 생성에 사용되는 속성 개수: "+usedAttriCount);
+////				OptimizerLogger.println(i+ " 개체에서  모델 생성에 사용되는 속성 개수: "+usedAttriCount);
 ////				System.exit(1);
 //				this.pop[i].setFitness(0.0f);
 //				this.pop[i].setModel(null);				
@@ -514,11 +523,11 @@ public class GA {
 				String popOutputBase = outputBase+"/pop_"+String.format("%05d", i);
 				
 //				//	개체 출력
-//				System.out.printf("pop[%d] parameters before call: ",i);
+//				OptimizerLogger.printf("pop[%d] parameters before call: ",i);
 //				for (Parameter param : parameters){
-//					System.out.printf("param[%s]=%s, ", param.getName(), param.getValueString());
+//					OptimizerLogger.printf("param[%s]=%s, ", param.getName(), param.getValueString());
 //				}
-//				System.out.println("");
+//				OptimizerLogger.println("");
 			
 				
 				//	알고리즘 평가항목 추가
@@ -559,7 +568,8 @@ public class GA {
 	private void run(List<AlgorithmModelEvalThread> evalThreadList) throws OptimizerException{
 
 		
-		System.out.println("==== 알고리즘 모델 평가 스레드 실행 요청!!!");
+		OptimizerLogger.println("==== Request for evaluating algorithm models!!!");
+		
 		
 		
 		//	쓰레드 실행 완료 체크주기(초)
@@ -568,38 +578,74 @@ public class GA {
 		List<AlgorithmModelEvalThread> runningThreadList = 
 				new ArrayList<AlgorithmModelEvalThread>(evalThreadList);
 		
-		//	알고리즘 평가 스레드 목록 실행
-		for (AlgorithmModelEvalThread runningEvalThread : runningThreadList){
-			runningEvalThread.start();
-		}
-		
-		
-		
-		
-		
-		//	알고리즘 평가 스레드 실행 상태 확인
-		try{
+		boolean isMultiThread = isMultiThreadEval();
+		String mode = "single";
+		if (isMultiThread) mode = "multi";
+		OptimizerLogger.println("Thread execution mode : "+mode);
+		if (isMultiThread){
+			//	멀티 쓰레드로 수행하는 경우,
 			
+			//	알고리즘 평가 스레드 목록 실행
+			for (AlgorithmModelEvalThread runningEvalThread : runningThreadList){
+				runningEvalThread.start();
+			}
+			
+			
+			//	알고리즘 평가 스레드 실행 상태 확인
 			while (runningThreadList.size() > 0){
 				
 				//	평가완료한 스레드목록 추출
 				for (int idx=runningThreadList.size()-1; idx >= 0; idx--){
 					AlgorithmModelEvalThread thread = runningThreadList.get(idx);
 					if (AlgorithmModelEvalThread.STATE_COMPLETED.equals(thread.getEvalState())){
-						System.out.printf("알고리즘 모델[popIndex=%d] 평가 완료....\n", thread.getPopIndex());
+						OptimizerLogger.printf("The algorithm model[popIndex=%d] has been evaluated....\n", thread.getPopIndex());
 						runningThreadList.remove(idx);
+					}else if (AlgorithmModelEvalThread.STATE_FAIL.equals(thread.getEvalState())){
+						throw new OptimizerException("Fail to evaluate an algorithm model!!!", thread.getEvalFailException());
 					}
 				}
 				
 				//	부하방지를 위한 main thread의 sleep 수행
-				Thread.sleep(checkIntervalSec * 1000);
+				try{
+					Thread.sleep(checkIntervalSec * 1000);
+				}catch(InterruptedException ex){
+					throw new OptimizerException("Fail to evaluate an algorithm model", ex);
+				}
 			}
 			
-			System.out.println("==== 알고리즘 모델 평가 스레드 실행 완료!!!");
+			OptimizerLogger.println("==== 알고리즘 모델 평가 스레드 실행 완료!!!");
 			
-		}catch(InterruptedException ex){
-			throw new OptimizerException("평가 실행 중 에러발생", ex);
+			
+		}else{
+			//	단일 쓰레드로 수행하는 경우,
+			
+			for (AlgorithmModelEvalThread runningEvalThread : runningThreadList){
+				
+				//	알고리즘 평가 스레드 실행
+				runningEvalThread.start();
+				
+				boolean isCompleted = false;
+				while (!isCompleted){
+					
+					if (AlgorithmModelEvalThread.STATE_COMPLETED.equals(runningEvalThread.getEvalState())){
+						OptimizerLogger.printf("The algorithm model[popIndex=%d] has been evaluated....\n", runningEvalThread.getPopIndex());
+						isCompleted = true;
+					}else if (AlgorithmModelEvalThread.STATE_FAIL.equals(runningEvalThread.getEvalState())){
+						throw new OptimizerException("Fail to evaluate an algorithm model!!!", runningEvalThread.getEvalFailException());
+					}
+					
+					//	부하방지를 위한 main thread의 sleep 수행
+					try{
+						Thread.sleep(checkIntervalSec * 1000);
+					}catch(InterruptedException ex){
+						throw new OptimizerException("Fail to evaluate an algorithm model", ex);
+					}
+//					OptimizerLogger.println("====> check state : "+runningEvalThread.getEvalState() );
+				}
+			}
+			
 		}
+		
 		
 	}
 	
@@ -683,7 +729,7 @@ public class GA {
 			out.close();
 			
 		}catch(IOException ex){
-			throw new OptimizerException("생성된 모델 및 평가 출력 중 에러 발생...", ex);
+			throw new OptimizerException("Fail to write an algorithm model and evaluation result...", ex);
 		}
 		
 	}
