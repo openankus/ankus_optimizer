@@ -101,7 +101,7 @@ public class GAMain{
 		//	output root 디렉토리 설정
 		Calendar now = Calendar.getInstance();
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
-		String outputRootBase = userOutputBase+File.separator+"OptiOutput_"+sdf.format(now.getTime());
+		String outputRootBase = userOutputBase+File.separator+"optiOutput_"+sdf.format(now.getTime());
 		
 		
     	//--<입력데이터의 속성 개수 추출 및 데이터 객체 생성>---

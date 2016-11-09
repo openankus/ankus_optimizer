@@ -198,6 +198,12 @@ public class App
 	
     public static void main( String[] args ) throws Exception
     {
+    	if (args.length < 2){
+    		showParamGuide();
+    		return;
+    	}
+    	
+    	
     	String mgr = args[0];
     	String cmd = args[1];
     	
@@ -1252,63 +1258,76 @@ public class App
     		
     	}
     	else{
-			System.out.printf("Wrong parameters!!! Please refer to the below\n");
     		
-			//	pool 관련 
-    		System.out.printf("\t- poolmgr add <pool name> <jar path>\n");
-//    		System.out.printf("\t- poolmgr delete <pool name>\n");
-    		System.out.printf("\t- poolmgr list\n");
-    		
-    		// algorithm 관련
-    		System.out.printf("\t- algomgr add <pool name> <algorithm name>\n");
-//    		System.out.printf("\t- algomgr delete <pool name> <algorithm name>\n");
-    		System.out.printf("\t- algomgr list <pool name>\n");
-    		System.out.printf("\t- algomgr setParamFormat <algorithm name> <param format: ankus | mahoutRF>\n");
-    		System.out.printf("\t- algomgr setTrainClassName <algorithm name> <class name>\n");
-    		System.out.printf("\t- algomgr setClassifyClassName <algorithm name> <class name>\n");
-    		System.out.printf("\t- algomgr setParam <algorithm name> input <parameter name>\n");
-    		System.out.printf("\t- algomgr setParam <algorithm name> inputTest <parameter name>\n");
-    		System.out.printf("\t- algomgr setParam <algorithm name> delimiter <parameter name>\n");
-    		System.out.printf("\t- algomgr setParam <algorithm name> output <parameter name>\n");
-    		System.out.printf("\t- algomgr setParam <algorithm name> indexList <parameter name>\n");
-    		System.out.printf("\t- algomgr setParam <algorithm name> numericIndexList <parameter name>\n");
-    		System.out.printf("\t- algomgr setParam <algorithm name> nominalIndexList <parameter name>\n");
-    		System.out.printf("\t- algomgr setParam <algorithm name> classIndex <parameter name>\n");
-    		System.out.printf("\t- algomgr setParam <algorithm name> modelPath <parameter name>\n");
-    		System.out.printf("\t- algomgr setParam <algorithm name> optimize <parameter name> <data type> <min value> <max value>\n");
-    		System.out.printf("\t- algomgr setParam <algorithm name> trainEtc <parameter name> [<parameter value>] | '']\n");
-    		System.out.printf("\t- algomgr setParam <algorithm name> classifyEtc <parameter name> [<parameter value>] | '']\n");
-    		System.out.printf("\t- algomgr delParam <algorithm name> <parameter name>\n");
-    		System.out.printf("\t- algomgr setClassifyOutputRelPath <algorithm name> <relative path on each popolulation output directory>\n");
-//    		System.out.printf("\t- algomgr delClassifyOutputRelPath <algorithm name>\n");
-    		System.out.printf("\t- algomgr setParamValueDelimiter <algorithm name> <delimiter>\n");
-//    		System.out.printf("\t- algomgr delParamValueDelimiter <algorithm name>\n");
-    		System.out.printf("\t- algomgr setClassifyOutputMode <algorithm name> <mode : lableWithInput | indexWithoutInput>\n");
-    		System.out.printf("\t- algomgr setModelAbsPath <algorithm name> <aboslute path to a trained model>\n");
-    		System.out.printf("\t- algomgr delModelAbsPath <algorithm name>\n");
-    		System.out.printf("\t- algomgr setModelRelPath <algorithm name> <relative path to a trained model on each popoluation output directory>\n");
-    		System.out.printf("\t- algomgr delModelRelPath <algorithm name>\n");
-    		
-    		
-    		//	optimizer 관련
-    		System.out.printf("\t- optmgr infSet <input data file path> <delimiter>\n");
-    		System.out.printf("\t- optmgr dataList \n");
-    		System.out.printf("\t- optmgr infNumericIndexList <index list delimitted with comma(,)>\n");
-    		System.out.printf("\t- optmgr infNominalIndexList <index list delimitted with comma(,)>\n");
-    		System.out.printf("\t- optmgr infClass <class index> <class label list delimitted with comma(,)>\n");
-    		System.out.printf("\t- optmgr setMultiThreadEval [true | false]\n");
-    		System.out.printf("\t- optmgr algSet <algorithm name>\n");
-    		System.out.printf("\t- optmgr algIniPara [random | user]\n");
-    		System.out.printf("\t- optmgr algParaSet <parameter name> [<parameter value> | '']\n");
-    		System.out.printf("\t- optmgr algParaDel <parameter name>\n");
-    		System.out.printf("\t- optmgr algParaList \n");
-    		System.out.printf("\t- optmgr genSet <parameter name : mp | cp | ps | rs | tc_maxg | tc_minf | bs> <parameter value> \n");
-    		System.out.printf("\t- optmgr genSetList \n");
-    		System.out.printf("\t- optmgr optmgr run \n");
-    		
+    		showParamGuide();
+
     		return;
     	}
     		
     	
     }
+    
+    
+    /**
+     * 파라메터 안내문을 출력
+     */
+	public static void showParamGuide(){
+		System.out.printf("Wrong parameters!!!\n"
+				+ "Please refer to the below\n");
+		
+		//	pool 관련 
+		System.out.printf("\t- poolmgr add <pool name> <jar path>\n");
+//		System.out.printf("\t- poolmgr delete <pool name>\n");
+		System.out.printf("\t- poolmgr list\n");
+		
+		// algorithm 관련
+		System.out.printf("\t- algomgr add <pool name> <algorithm name>\n");
+//		System.out.printf("\t- algomgr delete <pool name> <algorithm name>\n");
+		System.out.printf("\t- algomgr list <pool name>\n");
+		System.out.printf("\t- algomgr setParamFormat <algorithm name> <param format: ankus | mahoutRF>\n");
+		System.out.printf("\t- algomgr setTrainClassName <algorithm name> <class name>\n");
+		System.out.printf("\t- algomgr setClassifyClassName <algorithm name> <class name>\n");
+		System.out.printf("\t- algomgr setParam <algorithm name> input <parameter name>\n");
+		System.out.printf("\t- algomgr setParam <algorithm name> inputTest <parameter name>\n");
+		System.out.printf("\t- algomgr setParam <algorithm name> delimiter <parameter name>\n");
+		System.out.printf("\t- algomgr setParam <algorithm name> output <parameter name>\n");
+		System.out.printf("\t- algomgr setParam <algorithm name> indexList <parameter name>\n");
+		System.out.printf("\t- algomgr setParam <algorithm name> numericIndexList <parameter name>\n");
+		System.out.printf("\t- algomgr setParam <algorithm name> nominalIndexList <parameter name>\n");
+		System.out.printf("\t- algomgr setParam <algorithm name> classIndex <parameter name>\n");
+		System.out.printf("\t- algomgr setParam <algorithm name> modelPath <parameter name>\n");
+		System.out.printf("\t- algomgr setParam <algorithm name> optimize <parameter name> <data type> <min value> <max value>\n");
+		System.out.printf("\t- algomgr setParam <algorithm name> trainEtc <parameter name> [<parameter value>] | '']\n");
+		System.out.printf("\t- algomgr setParam <algorithm name> classifyEtc <parameter name> [<parameter value>] | '']\n");
+		System.out.printf("\t- algomgr delParam <algorithm name> <parameter name>\n");
+		System.out.printf("\t- algomgr setClassifyOutputRelPath <algorithm name> <relative path on each popolulation output directory>\n");
+//		System.out.printf("\t- algomgr delClassifyOutputRelPath <algorithm name>\n");
+		System.out.printf("\t- algomgr setParamValueDelimiter <algorithm name> <delimiter>\n");
+//		System.out.printf("\t- algomgr delParamValueDelimiter <algorithm name>\n");
+		System.out.printf("\t- algomgr setClassifyOutputMode <algorithm name> <mode : lableWithInput | indexWithoutInput>\n");
+		System.out.printf("\t- algomgr setModelAbsPath <algorithm name> <aboslute path to a trained model>\n");
+		System.out.printf("\t- algomgr delModelAbsPath <algorithm name>\n");
+		System.out.printf("\t- algomgr setModelRelPath <algorithm name> <relative path to a trained model on each popoluation output directory>\n");
+		System.out.printf("\t- algomgr delModelRelPath <algorithm name>\n");
+		
+		
+		//	optimizer 관련
+		System.out.printf("\t- optmgr infSet <input data file path> <delimiter>\n");
+		System.out.printf("\t- optmgr dataList \n");
+		System.out.printf("\t- optmgr infNumericIndexList <index list delimitted with comma(,)>\n");
+		System.out.printf("\t- optmgr infNominalIndexList <index list delimitted with comma(,)>\n");
+		System.out.printf("\t- optmgr infClass <class index> <class label list delimitted with comma(,)>\n");
+		System.out.printf("\t- optmgr setMultiThreadEval [true | false]\n");
+		System.out.printf("\t- optmgr algSet <algorithm name>\n");
+		System.out.printf("\t- optmgr algIniPara [random | user]\n");
+		System.out.printf("\t- optmgr algParaSet <parameter name> [<parameter value> | '']\n");
+		System.out.printf("\t- optmgr algParaDel <parameter name>\n");
+		System.out.printf("\t- optmgr algParaList \n");
+		System.out.printf("\t- optmgr genSet <parameter name : mp | cp | ps | rs | tc_maxg | tc_minf | bs> <parameter value> \n");
+		System.out.printf("\t- optmgr genSetList \n");
+		System.out.printf("\t- optmgr run \n");
+		
+		
+	}
+    
 }
