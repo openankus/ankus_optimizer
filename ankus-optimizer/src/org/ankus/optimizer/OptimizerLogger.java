@@ -20,7 +20,7 @@ public class OptimizerLogger {
 	 */
 	private static PrintStream logOut = null;
 	
-	private static SimpleDateFormat sdf = new SimpleDateFormat("[yyyy-MM-dd, hh:mm:ss a]"); 
+	private static SimpleDateFormat sdf = new SimpleDateFormat("[yyyy-MM-dd, HH:mm:ss]"); 
 	
 
 	//	로그파일에 대한 출력스트림 열기
@@ -32,7 +32,8 @@ public class OptimizerLogger {
 			if (!logFile.getParentFile().exists()){
 				boolean flag = logFile.getParentFile().mkdirs();
 				if (!flag){
-					System.out.println("Can not create the log file.(OPTMGR_OUTFLOG="+logPath+")");
+					System.err.println("Can not create the log file.(OPTMGR_OUTFLOG="+logPath+")");
+					System.err.println("Please check the file or directory permission.");
 					System.exit(1);
 				}
 			}
@@ -47,7 +48,11 @@ public class OptimizerLogger {
 				System.exit(1);
 			}
 		}
-		System.out.println("로그파일경로: "+logPath);
+		if (logOut != null){
+			System.out.println("LogFilePath($OPTMGR_OUTFLOG) : "+logPath);
+		}else{
+			System.out.println("LogFilePath($OPTMGR_OUTFLOG) has not been configured!!!");
+		}
 	}
 	
 	/**
@@ -62,7 +67,10 @@ public class OptimizerLogger {
 		sb.append(" ");
 		sb.append(format);
 		System.out.printf(sb.toString(), args);
-		if (logOut != null)	logOut.printf(sb.toString(), args);
+		if (logOut != null){
+			logOut.printf(sb.toString(), args);
+			logOut.flush();
+		}
 	}
 	
 	/**
@@ -76,7 +84,10 @@ public class OptimizerLogger {
 		sb.append(" ");
 		sb.append(message);
 		System.out.println(sb.toString());
-		if (logOut != null)	logOut.println(sb.toString());
+		if (logOut != null){
+			logOut.println(sb.toString());
+			logOut.flush();
+		}
 	}
 	
 	/**
@@ -90,7 +101,10 @@ public class OptimizerLogger {
 		sb.append(" ");
 		sb.append(message);
 		System.out.print(sb.toString());
-		if (logOut != null)	logOut.print(sb.toString());
+		if (logOut != null){
+			logOut.print(sb.toString());
+			logOut.flush();
+		}
 	}
 	
 
