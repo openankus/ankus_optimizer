@@ -480,7 +480,7 @@ public class GA {
 			// 속성선택 유무를 표현하는 유전인자 인코딩	
 			index = 0; 
 			usedAttriCount = 0;
-			for (int idx = tempData.getSizeOfAttributeIndexList() ; idx >=0 ; idx--){
+			for (int idx = tempData.getSizeOfAttributeIndexList()-1 ; idx >=0 ; idx--){
 				if (this.pop[i].getGene(idx) == 0){
 					tempData.deleteAttributeIndexAt(idx);
 					tempTrainData.deleteAttributeIndexAt(idx);
