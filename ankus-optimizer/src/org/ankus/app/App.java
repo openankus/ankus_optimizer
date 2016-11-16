@@ -262,7 +262,7 @@ public class App
 					info.pools.remove(i);
 					if(save(info))
 					{
-						System.out.printf("poolName=[%s] has been deleted\n", info.pools.get(i).getPoolName());
+						System.out.printf("poolName=[%s] has been deleted\n", poolname);
 						return;
 					}else{
 						System.out.println("Fail to delete...");

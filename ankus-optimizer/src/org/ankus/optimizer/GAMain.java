@@ -121,18 +121,20 @@ public class GAMain{
     	ArrayList<Integer> numericIndexList = new ArrayList<Integer>();
     	for (String index : optConfig.getNumericIndexList()){
     		Integer val = Integer.parseInt(index);
-    		if (classIndex != val)
+//    		if (classIndex != val)
     			numericIndexList.add(val);
     	}
     	Collections.sort(numericIndexList);
+//    	System.out.println("수치형 속성 인덱스 목록 크기: "+numericIndexList.size());
     	//	기호형 속성 인덱스 목록
     	ArrayList<Integer> nominalIndexList = new ArrayList<Integer>();
     	for (String index : optConfig.getNominalIndexList()){
     		Integer val = Integer.parseInt(index);
-    		if (classIndex != val)
+//    		if (classIndex != val)
     			nominalIndexList.add(val);
     	}
     	Collections.sort(nominalIndexList);
+//    	System.out.println("기호형 속성 인덱스 목록 크기: "+nominalIndexList.size());
     	
     	//	데이터 객체 생성
     	Instances data = new Instances(inputFile, delimiter, numAllAttr, numericIndexList, nominalIndexList, classIndex, optConfig.getClassLabelList());
