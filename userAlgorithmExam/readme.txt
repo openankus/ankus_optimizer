@@ -1,3 +1,22 @@
+####### 사용자 알고리즘 예제(User Algorithm Example - RandomForest)의 Build 및 실행환경 설정 ###########
+
+* JAR Build
+ > maven 설치 및 maven 명령어에 대한 PATH 설정
+ > /userAlgorithmExam으로 이동
+ > build 명령어 실행 (명령어 : mvn package)
+  - build JAR 파일경로 : /userAlgorithmExam/target/userAlgorithmExam-0.0.1-SNAPSHOT.jar
+
+* 실행 환경 구축
+ > HADOOP 2.6 설치 및 명령어에 대한 PATH 설정
+ > 사용자 알고리즘 예제가 참조하는 JAR를 HDFS에 등록
+  - JAR를 담을 HDFS 디렉터리 생성 (명령어: hdfs dfs -mkdir /lib)
+  - /userAlgorithmExam/lib로 이동
+  - JAR파일들을 HDFS 디렉터리로 upload (명령어: hdfs dfs -put * /lib)
+
+
+
+
+
 
 ####### 사용자 알고리즘 예제의 실행명령어 (User Algorithm Example - RandomForest) ###########
 
@@ -37,7 +56,7 @@ hadoop jar userAlgorithm-0.0.1-SNAPSHOT.jar rf -numericIndexList 0,1,2,3 -nomina
  
  
  
-####### ankus-optimizer 등록을 위한 실행명령어(user Algorithm Example - RandomForest) ###########
+####### ankus-optimizer에  사용자 알고리즘 구현 예제(User Algorithm Example)를 등록하는 실행명령어 및  최적화 수행  실행명령어 ###########
  
 ---------- Pool 관리 기능 -----------------
 * pool 추가(pool명: userPool, 라이브러리파일: userAlgorithm-0.0.1-SNAPSHOT.jar)
