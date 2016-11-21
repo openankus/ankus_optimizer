@@ -348,10 +348,8 @@
 * 알고리즘 학습모델 파라메터명 설정
  hadoop jar ankus-optimizer-0.5.jar algomgr setParam C45 modelPath -modelPath
  
-* 알고리즘 최적화 파라메터 설정(최소노드수, 순도)
+* 알고리즘 최적화 파라메터 설정(최소노드수)
  hadoop jar ankus-optimizer-0.5.jar algomgr setParam C45 optimize -minLeafData int 2 20
-
- hadoop jar ankus-optimizer-0.5.jar algomgr setParam C45 optimize -purity float 0.5 1.0
 
 * 알고리즘 학습 관련 기타 파라메터 설정
  hadoop jar ankus-optimizer-0.5.jar algomgr setParam C45 trainEtc -isValidation false
