@@ -335,7 +335,7 @@
 * 알고리즘 출력 파라메터명 설정
  hadoop jar ankus-optimizer-0.5.jar algomgr setParam C45 output -output
 
-* 알고리즘 모델생성 용 수치형 속성 인덱스목록 파라메터명 설정
+* 알고리즘 모델생성 용 수치형 속성 인덱스목록 파라메터명 설정 
  hadoop jar ankus-optimizer-0.5.jar algomgr setParam C45 numericIndexList -numericIndexList
 
 * 알고리즘 모델생성 용 기호형 속성 인덱스목록 파라메터명 설정
