@@ -25,6 +25,7 @@ import org.ankus.poolmgr.PoolInfo;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FSDataOutputStream;
+import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 
@@ -191,6 +192,22 @@ public class GAMain{
     		trainDataOs.close();
     		testDataOs.close();
     		
+    		
+    		//	훈련 및 테스팅 데이터 파일이 서비스 가능할 때까지 sleep
+    		boolean hasFiles = false;
+    		int cntSleep = 0;
+    		while (!hasFiles){
+    			if (fs.exists(new Path(trainDataPath)) &&
+    					fs.exists(new Path(testDataPath))){
+    				hasFiles = true;
+    			}
+    			
+    			if (cntSleep > 60){
+    				throw new OptimizerException("Fail to make train and test data file.");
+    			}
+        		Thread.sleep(1000);
+        		cntSleep ++;
+    		}
     		
     		
     		
