@@ -584,10 +584,19 @@ public class GA {
 		OptimizerLogger.println("Thread execution mode : "+mode);
 		if (isMultiThread){
 			//	멀티 쓰레드로 수행하는 경우,
+
+			//	쓰레드 실행간격(초)
+			int treadIntervalSec = 2;
 			
 			//	알고리즘 평가 스레드 목록 실행
 			for (AlgorithmModelEvalThread runningEvalThread : runningThreadList){
 				runningEvalThread.start();
+				//	부하방지를 위한 main thread의 sleep 수행
+				try{
+					Thread.sleep(treadIntervalSec * 1000);
+				}catch(InterruptedException ex){
+					throw new OptimizerException("Fail to evaluate an algorithm model", ex);
+				}
 			}
 			
 			

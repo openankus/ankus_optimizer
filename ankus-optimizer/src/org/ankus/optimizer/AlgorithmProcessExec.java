@@ -415,14 +415,17 @@ public class AlgorithmProcessExec implements Algorithm{
 				
 				//	프로세스  실행 완료까지 대기
 				int res = process.waitFor();
-				if (res != 0){
-					throw new OptimizerException("Fail to process a shell command !!!\n"
-							+ "Please check out the parameter settings.\n"
-							+ "> shell command: "+ getCommandLineString(command));
-				}else{
-					OptimizerLogger.println("Complete to process a shell command\n"
-							+ "> shell command: "+ getCommandLineString(command));
-				}
+				//	모델을 생성할 필요가 없는 알고리즘들로 인해 주석처리(for kNN)
+//				if (res != 0){
+//					throw new OptimizerException("Fail to process a shell command !!!\n"
+//							+ "Please check out the parameter settings.\n"
+//							+ "> shell command: "+ getCommandLineString(command));
+//				}else{
+//					OptimizerLogger.println("Complete to process a shell command\n"
+//							+ "> shell command: "+ getCommandLineString(command));
+//				}
+				OptimizerLogger.println("Complete to process a shell command\n"
+						+ "> shell command: "+ getCommandLineString(command));
 				
 				
 				inputStream.close();

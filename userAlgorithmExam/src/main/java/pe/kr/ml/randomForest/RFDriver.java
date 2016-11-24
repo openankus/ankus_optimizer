@@ -2,10 +2,13 @@ package pe.kr.ml.randomForest;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.util.UUID;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.filecache.DistributedCache;
+import org.apache.hadoop.fs.FSDataInputStream;
+import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.LongWritable;
@@ -51,14 +54,6 @@ public class RFDriver extends Configured implements Tool {
 		}
 
 		
-		// Split할 파일 사이즈
-		long numTree = conf.getLong(ArgumentsConstants.NUM_PARTITION, 2);
-		String inputPath = conf.get(ArgumentsConstants.INPUT_PATH);
-		long sizeInput = fs.getFileStatus(new Path(inputPath)).getLen();
-		long splitSize = sizeInput/numTree;
-		logger.info("Partition(Split) size in byte: "+ splitSize);
-//		conf.set("-Dmapred.max.split.size", String.valueOf(splitSize));
-		conf.set("mapred.max.split.size", String.valueOf(splitSize));
 		
 		
 		boolean isTraining = false;
@@ -67,20 +62,56 @@ public class RFDriver extends Configured implements Tool {
 
 		String outputBase = conf.get(ArgumentsConstants.OUTPUT_PATH, null);
 		String delimiter = conf.get(ArgumentsConstants.DELIMITER, "\t");
-		
-
+		conf.set(ArgumentsConstants.DELIMITER, delimiter);
 		
 		
 		
 		if (isTraining) {
 			// In the case of training MR job
+			
+			//---<분포도를 달리한 임시 훈련 입력데이터 생성>----
+			//	트레이닝용 데이터 생성 
+			String inputPath = conf.get(ArgumentsConstants.INPUT_PATH);
+			Path inputParentPath = (new Path(inputPath)).getParent();
+			UUID uid = UUID.randomUUID();
+			Path bootstrapTrainDataPath = new Path(inputParentPath, "trainData_"+uid.toString()+".txt");
 
-			conf.set(ArgumentsConstants.DELIMITER, delimiter);
+			long numTree = conf.getLong(ArgumentsConstants.NUM_PARTITION, 2);
+			long dataCopy = numTree + 1;
+			if(fs.exists(bootstrapTrainDataPath)) fs.delete(bootstrapTrainDataPath, true);
+			FSDataOutputStream os = fs.create(bootstrapTrainDataPath);
+			for (int idx=0; idx<dataCopy; idx++){
+				FSDataInputStream is = fs.open(new Path(inputPath));
+				byte[] buffer = new byte[1024];
+				int len = -1;
+				while ((len = is.read(buffer)) >= 0){
+					os.write(buffer, 0, len);
+				}
+				os.write("\n".getBytes());
+				is.close();
+			}
+			os.close();
+			//---</분포도를 달리한 임시 훈련 입력데이터 생성>----
+
+			
+			// Split할 파일 사이즈(split 개수 만큼 tree 생성)
+//			long sizeInput = fs.getFileStatus(new Path(inputPath)).getLen();
+			long sizeInput = fs.getFileStatus(bootstrapTrainDataPath).getLen();
+			long splitSize = sizeInput/numTree;
+			System.out.println("Partition(Split) size in byte: "+ splitSize);
+			logger.info("Partition(Split) size in byte: "+ splitSize);
+//			conf.set("-Dmapred.max.split.size", String.valueOf(splitSize));
+			conf.set("mapred.max.split.size", String.valueOf(splitSize));		
+//			conf.set("mapreduce.input.fileinputformat.split.maxsize", String.valueOf(splitSize));
+			
+			
 
 			logger.info("Confidence Factor for Pruning: " + conf.get(ArgumentsConstants.CONFIDENCE_FACTOR));
-			logger.info("Minimum Lef Node Count for Pruning: " + conf.get(ArgumentsConstants.MIN_LEAF_DATA));
+			logger.info("Minimum Leaf Node Count for Pruning: " + conf.get(ArgumentsConstants.MIN_LEAF_DATA));
 			logger.info("> Random Forest Classification Training MapReduce JOB Started..");
 
+			
+			
 			// Job 이름 설정
 			Job job = new Job(conf, RFDriver.class.getName());
 
@@ -103,11 +134,20 @@ public class RFDriver extends Configured implements Tool {
 			}
 
 			// 입출력 데이터 경로 설정
-			Path inputFilePath = new Path(conf.get(ArgumentsConstants.INPUT_PATH));
+//			Path inputFilePath = new Path(conf.get(ArgumentsConstants.INPUT_PATH));
+			FileInputFormat.addInputPath(job, bootstrapTrainDataPath);
 			Path outputPath = new Path(outputBase);
-			FileInputFormat.addInputPath(job, inputFilePath);
+//			FileInputFormat.addInputPath(job, inputFilePath);
 			FileOutputFormat.setOutputPath(job, new Path(outputBase));
 			fs.delete(outputPath, true);
+			
+
+			
+
+			
+			
+			
+			
 
 			// Job 클래스 설정
 			job.setJarByClass(RFDriver.class);
@@ -129,11 +169,25 @@ public class RFDriver extends Configured implements Tool {
 
 			// Job 수행(Job 수행완료까지 대기)
 			job.waitForCompletion(true);
+			
+			// 임시 훈련 입력데이터 삭제
+			fs.delete(bootstrapTrainDataPath, true);
 
 			logger.info("> Random Forest Classification Training MapReduce JOB Finished..");
 		} else {
 			// In the case of classifying MR job
 
+			
+			// Split할 파일 사이즈
+			long numPart = conf.getLong(ArgumentsConstants.NUM_PARTITION, 2);
+			String inputPath = conf.get(ArgumentsConstants.INPUT_PATH);
+			long sizeInput = fs.getFileStatus(new Path(inputPath)).getLen();
+			long splitSize = sizeInput/numPart;
+			logger.info("Partition(Split) size in byte: "+ splitSize);
+//			conf.set("-Dmapred.max.split.size", String.valueOf(splitSize));
+			conf.set("mapred.max.split.size", String.valueOf(splitSize));
+			
+			
 			// Job 이름 설정
 			Job job = new Job(conf, RFDriver.class.getName());
 
