@@ -4,13 +4,17 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 
 import org.ankus.optimizer.GAMain;
+import org.ankus.optimizer.util.Constants;
 import org.ankus.poolmgr.AlgorithmInfo;
 import org.ankus.poolmgr.OptimizerConfigInfo;
 import org.ankus.poolmgr.ManagerData;
@@ -59,6 +63,11 @@ public class App
 	 * 관리자 데이터를 파일 저장하기 위한 mapper 객체
 	 */
 	public static ObjectMapper mapper = new ObjectMapper();
+	
+	/**
+	 * 일시 출력 형식
+	 */
+	private static SimpleDateFormat dateTimeFormat = new SimpleDateFormat(Constants.FORMAT_DATE_TIME);
 
 	/**
 	 * 관리자 데이터 로드
@@ -233,9 +242,10 @@ public class App
     		}
     		
     		PoolInfo pi = new PoolInfo(poolname, poolfile);
+    		pi.setCreateDateTime(dateTimeFormat.format(Calendar.getInstance().getTime()));
     		info.pools.add(pi);
     		
-    		if(save(info)) System.out.printf("Add pool poolName=[%s], jarFile=[%s]\n", poolname, poolfile);
+    		if(save(info)) System.out.printf("Add pool poolName=[%s], jarFile=[%s], createDateTime=[%s]\n", poolname, poolfile, pi.getCreateDateTime());
     		else System.out.printf("Fail to add...\n");
     	}
     	else if(mgr.equalsIgnoreCase("poolmgr") && cmd.equalsIgnoreCase("list"))
@@ -249,7 +259,7 @@ public class App
 
 			for(int i = 0; i<info.pools.size(); i++)
 			{
-				System.out.printf("pool%d. poolName=[%s], poolFile=[%s], algorithmCount=[%d]\n", i+1, info.pools.get(i).getPoolName(), info.pools.get(i).getFileName(), info.pools.get(i).getAlgorithms().size());
+				System.out.printf("pool%d. poolName=[%s], poolFile=[%s], createDateTime=[%s], updateDateTime=[%s], algorithmCount=[%d]\n", i+1, info.pools.get(i).getPoolName(), info.pools.get(i).getFileName(), info.pools.get(i).getCreateDateTime(), info.pools.get(i).getUpdateDateTime(), info.pools.get(i).getAlgorithms().size());
 			}
     	}
     	else if(mgr.equalsIgnoreCase("poolmgr") && cmd.equalsIgnoreCase("delete") && args.length==3)
@@ -293,8 +303,12 @@ public class App
     		
     		AlgorithmInfo ai = new AlgorithmInfo(algorithmname);
     		pinfo.getAlgorithms().add(ai);
+
+    		Date now = Calendar.getInstance().getTime();
+    		pinfo.setUpdateDateTime(dateTimeFormat.format(now));
+    		ai.setCreateDateTime(dateTimeFormat.format(now));
     		
-    		if(save(info)) System.out.printf("Add algorithm %s %s\n", poolname, algorithmname);
+    		if(save(info)) System.out.printf("Add algorithm poolName=[%s] algorithmName=[%s] createDateTime=[%s]\n", poolname, algorithmname, ai.getCreateDateTime());
     		else System.out.printf("Fail to add...\n");
     	}
     	else if(mgr.equalsIgnoreCase("algomgr") && cmd.equalsIgnoreCase("setParamFormat") && args.length==4)
@@ -311,6 +325,9 @@ public class App
     		}
     		
     		ainfo.setParamFormat(paramFormat);
+
+    		Date now = Calendar.getInstance().getTime();
+    		ainfo.setUpdateDateTime(dateTimeFormat.format(now));
     		
     		if(save(info)) System.out.printf("Set algorithm parameter format (algorithm=[%s], paramFormat=[%s]) \n", algorithmName, paramFormat);
     		else System.out.printf("Fail to set ...\n");
@@ -329,6 +346,9 @@ public class App
     		}
     		
     		ainfo.setTrainClassName(className);
+
+    		Date now = Calendar.getInstance().getTime();
+    		ainfo.setUpdateDateTime(dateTimeFormat.format(now));
     		
     		if(save(info)) System.out.printf("Set algorithm train class name format (algorithm=[%s], className=[%s]) \n", algorithmName, className);
     		else System.out.printf("Fail to set ...\n");
@@ -347,6 +367,9 @@ public class App
     		}
     		
     		ainfo.setClassifyClassName(className);
+
+    		Date now = Calendar.getInstance().getTime();
+    		ainfo.setUpdateDateTime(dateTimeFormat.format(now));
     		
     		if(save(info)) System.out.printf("Set algorithm classification class name format (algorithm=[%s], className=[%s]) \n", algorithmName, className);
     		else System.out.printf("Fail to set...\n");
@@ -394,6 +417,9 @@ public class App
     			paramInfo.setParamType(paramType);
     			ainfo.getParams().add(paramInfo);
     		}
+
+    		Date now = Calendar.getInstance().getTime();
+    		ainfo.setUpdateDateTime(dateTimeFormat.format(now));
     		
     		if(save(info)) System.out.printf("Set algorithm parameter (algorithm=[%s], classType=[%s], paramName=[%s])\n", algorithmname, paramType, paramName);
     		else System.out.printf("Fail to set...\n");
@@ -471,6 +497,9 @@ public class App
 				paramInfo.setParamValue(null);
     			ainfo.getParams().add(paramInfo);
     		}
+
+    		Date now = Calendar.getInstance().getTime();
+    		ainfo.setUpdateDateTime(dateTimeFormat.format(now));
     		
     		if(save(info)) System.out.printf("Set algorithm parameter (algorithm=[%s], paramType=[%s], paramName=[%s], dataType=[%s], min=[%s], max=[%s])\n", algorithmname, paramType, paramName, dataType, min, max);
     		else System.out.printf("Fail to set...\n");
@@ -517,6 +546,9 @@ public class App
 				paramInfo.setParamValue(paramValue);
     			ainfo.getParams().add(paramInfo);
     		}
+
+    		Date now = Calendar.getInstance().getTime();
+    		ainfo.setUpdateDateTime(dateTimeFormat.format(now));
     		
     		if(save(info)) System.out.printf("Set algorithm parameter (algorithm=[%s], paramType=[%s], paramName=[%s], paramValue=[%s])\n", algorithmname, paramType, paramName, paramValue);
     		else System.out.printf("Fail to set...\n");
@@ -544,6 +576,9 @@ public class App
     			}
     			idx++;
     		}
+
+    		Date now = Calendar.getInstance().getTime();
+    		ainfo.setUpdateDateTime(dateTimeFormat.format(now));
     		
     		if(save(info)) System.out.printf("Delete algorithm parameter (algorithm=[%s], paramName=[%s])\n", algorithmname, paramName);
     		else System.out.printf("Fail to delete...\n");
@@ -562,6 +597,9 @@ public class App
     		}
 
     		ainfo.setClassifyOutputRelPath(classifyOutputRelPath);
+
+    		Date now = Calendar.getInstance().getTime();
+    		ainfo.setUpdateDateTime(dateTimeFormat.format(now));
     		
     		if(save(info)) System.out.printf("Set algorithm classification output relative path (algorithm=[%s], classifyOutputRelPath=[%s])\n", algorithmname, classifyOutputRelPath);
     		else System.out.printf("Fail to set...\n");
@@ -579,6 +617,9 @@ public class App
     		}
 
     		ainfo.setClassifyOutputRelPath(null);
+
+    		Date now = Calendar.getInstance().getTime();
+    		ainfo.setUpdateDateTime(dateTimeFormat.format(now));
     		
     		if(save(info)) System.out.printf("Delete algorithm classification output relative path (algorithm=[%s])\n", algorithmname);
     		else System.out.printf("Fail to delete...\n");
@@ -597,6 +638,9 @@ public class App
     		}
     		
     		ainfo.setModelAbsPath(modelPath);
+
+    		Date now = Calendar.getInstance().getTime();
+    		ainfo.setUpdateDateTime(dateTimeFormat.format(now));
     		
     		if(save(info)) System.out.printf("Set algorithm model absolute path (algorithm=[%s], modelAbsPath=[%s])\n", algorithmname, modelPath);
     		else System.out.printf("Fail to set...\n");
@@ -614,6 +658,9 @@ public class App
     		}
 
     		ainfo.setModelAbsPath(null);
+
+    		Date now = Calendar.getInstance().getTime();
+    		ainfo.setUpdateDateTime(dateTimeFormat.format(now));
     		
     		if(save(info)) System.out.printf("Delete algorithm model absolute path (algorithm=[%s])\n", algorithmname);
     		else System.out.printf("Delete Fail..\n");
@@ -632,6 +679,9 @@ public class App
     		}
     		
     		ainfo.setModelRelPath(modelPath);
+
+    		Date now = Calendar.getInstance().getTime();
+    		ainfo.setUpdateDateTime(dateTimeFormat.format(now));
     		
     		if(save(info)) System.out.printf("Set algorithm model relative path (algorithm=[%s], modelRelPath=[%s])\n", algorithmname, modelPath);
     		else System.out.printf("Fail to set...\n");
@@ -649,6 +699,9 @@ public class App
     		}
 
     		ainfo.setModelRelPath(null);
+
+    		Date now = Calendar.getInstance().getTime();
+    		ainfo.setUpdateDateTime(dateTimeFormat.format(now));
     		
     		if(save(info)) System.out.printf("Delete algorithm model relative path (algorithm=[%s])\n", algorithmname);
     		else System.out.printf("Fail to delete...\n");
@@ -667,6 +720,9 @@ public class App
     		}
 
 			ainfo.setParamValueDelimiter(paramValueDelimiter);
+
+    		Date now = Calendar.getInstance().getTime();
+    		ainfo.setUpdateDateTime(dateTimeFormat.format(now));
     		
     		if(save(info)) System.out.printf("Set algorithm parameter value delimiter (algorithm=[%s], paramValueDelimiter=[%s])\n", algorithmname, paramValueDelimiter);
     		else System.out.printf("Fail to est...\n");
@@ -684,6 +740,9 @@ public class App
     		}
 
 			ainfo.setParamValueDelimiter(null);
+
+    		Date now = Calendar.getInstance().getTime();
+    		ainfo.setUpdateDateTime(dateTimeFormat.format(now));
     		
     		if(save(info)) System.out.printf("Delete algorithm parameter value delimiter (algorithm=[%s]) \n", algorithmname);
     		else System.out.printf("Fail to delete...\n");
@@ -702,9 +761,9 @@ public class App
     		List<AlgorithmInfo> algorithms = pinfo.getAlgorithms();
 			for(int i = 0; i<algorithms.size(); i++)
 			{
-				System.out.printf("algorithm%d. algorithmname=[%s], trainClassName=[%s], classifyClassName=[%s], paramcnt=[%d]\n", 
+				System.out.printf("algorithm%d. algorithmname=[%s], trainClassName=[%s], classifyClassName=[%s], paramcnt=[%d], createDateTime=[%s], updateDateTime=[%s]\n", 
 						i+1, algorithms.get(i).getAlgorithmName(), algorithms.get(i).getTrainClassName(), algorithms.get(i).getClassifyClassName(), 
-						algorithms.get(i).getParams()==null?0:algorithms.get(i).getParams().size());
+						algorithms.get(i).getParams()==null?0:algorithms.get(i).getParams().size(), algorithms.get(i).getCreateDateTime(), algorithms.get(i).getUpdateDateTime());
 			}
     	}
     	else if(mgr.equalsIgnoreCase("algomgr") && cmd.equalsIgnoreCase("delete") && args.length==4)
@@ -712,12 +771,21 @@ public class App
     		String poolname = args[2];
     		String algorithmname = args[3];
     		if(deleteAlgo(info, poolname, algorithmname)) {
-    			if(save(info))
+
+        		Date now = Calendar.getInstance().getTime();
+        		PoolInfo pinfo = findPool(info, poolname);
+        		pinfo.setUpdateDateTime(dateTimeFormat.format(now));
+
+        		if(save(info))
     			{
 					System.out.printf("algorithmName=[%s] deleted\n", algorithmname);
     				return;
     			}
     		}
+
+    		Date now = Calendar.getInstance().getTime();
+    		PoolInfo pinfo = findPool(info, poolname);
+    		pinfo.setUpdateDateTime(dateTimeFormat.format(now));
     			
 			System.out.printf("The algorithm(= %s) does not exist!\n", algorithmname);			
     	}
@@ -744,6 +812,11 @@ public class App
     		}
     		
 			ainfo.setClassifyOutputMode(mode);
+			
+
+    		Date now = Calendar.getInstance().getTime();
+    		ainfo.setUpdateDateTime(dateTimeFormat.format(now));
+
     		if (save(info)){
     			System.out.printf("Set algorithm classify output mode (algorithm=[%s], classifyOutputMode=[%s])\n", algorithmname, mode);
     		}else System.out.println("Fail to set ....");

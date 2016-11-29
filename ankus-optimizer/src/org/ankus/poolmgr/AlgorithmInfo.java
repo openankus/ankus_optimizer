@@ -91,6 +91,16 @@ public class AlgorithmInfo {
 	 */
 	private String classifyOutputMode = CO_MODE_LABEL_WITH_INPUT;
 	
+	/**
+	 * 생성일시
+	 */
+	private String createDateTime = null;
+
+	/**
+	 * 갱신일시
+	 */
+	private String updateDateTime = null;
+	
 	
 	public AlgorithmInfo() {}
 	
@@ -181,6 +191,22 @@ public class AlgorithmInfo {
 
 	public void setParamFormat(String paramFormat) {
 		this.paramFormat = paramFormat;
+	}
+
+	public String getCreateDateTime() {
+		return createDateTime;
+	}
+
+	public void setCreateDateTime(String createDateTime) {
+		this.createDateTime = createDateTime;
+	}
+
+	public String getUpdateDateTime() {
+		return updateDateTime;
+	}
+
+	public void setUpdateDateTime(String updateDateTime) {
+		this.updateDateTime = updateDateTime;
 	}
 
 	
