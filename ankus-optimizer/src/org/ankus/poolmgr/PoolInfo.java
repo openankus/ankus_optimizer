@@ -13,9 +13,32 @@ import java.util.List;
  *
  */
 public class PoolInfo {
+	
+	/**
+	 * Pool 이름
+	 */
 	private String poolName;
+	
+	/**
+	 * JAR 파일 경로
+	 */
 	private String fileName;
+	
+	/**
+	 * Pool 소속 알고리즘 목록
+	 */
 	private List<AlgorithmInfo> algorithms = new ArrayList<AlgorithmInfo>();
+	
+	/**
+	 * 생성일시
+	 */
+	private String createDateTime = null;
+
+	/**
+	 * 갱신일시
+	 */
+	private String updateDateTime = null;
+	
 	
 	public PoolInfo()
 	{
@@ -50,6 +73,22 @@ public class PoolInfo {
 
 	public void setAlgorithms(List<AlgorithmInfo> algorithms) {
 		this.algorithms = new ArrayList<AlgorithmInfo>(algorithms);
+	}
+
+	public String getCreateDateTime() {
+		return createDateTime;
+	}
+
+	public void setCreateDateTime(String createDateTime) {
+		this.createDateTime = createDateTime;
+	}
+
+	public String getUpdateDateTime() {
+		return updateDateTime;
+	}
+
+	public void setUpdateDateTime(String updateDateTime) {
+		this.updateDateTime = updateDateTime;
 	}
 	
 	

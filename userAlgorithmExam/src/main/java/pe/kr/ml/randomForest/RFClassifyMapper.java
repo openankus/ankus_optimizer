@@ -164,13 +164,13 @@ public class RFClassifyMapper  extends Mapper<LongWritable, Text, LongWritable, 
 					Classifier cls = (Classifier) ois.readObject();
 					classifierMap.put(fileName, cls);
 				}catch(ClassNotFoundException ex){
-					RFLogger.println("Failt to load a tree model : "+ex.getMessage());
+					RFLogger.println("Fail to load a tree model : "+ex.getMessage());
 				}
 				
 			}
 		}
 		
-		RFLogger.println("트리개수: "+classifierMap.size());
+//		RFLogger.println("트리개수: "+classifierMap.size());
 		
 		
 	}
@@ -202,7 +202,7 @@ public class RFClassifyMapper  extends Mapper<LongWritable, Text, LongWritable, 
 			RFLogger.println("Fail to create fake dataset : "+ex.getMessage());
 		}
 
-		RFLogger.println(value.toString());
+//		RFLogger.println(value.toString());
 		
 //		double correctValue = instance.value(Integer.parseInt(classIndex));
 		

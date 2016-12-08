@@ -51,4 +51,9 @@ public class Constants {
      */
     public static final String FILE_NAME_ORDERED_POP_INFO_LIST = "orderedPopInfoList";
     
+    /**
+     * 일시 형식
+     */
+    public static final String FORMAT_DATE_TIME = "yyyy-MM-dd HH:mm:ss";
+    
 }

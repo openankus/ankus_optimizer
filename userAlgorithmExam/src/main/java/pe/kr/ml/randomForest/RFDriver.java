@@ -2,6 +2,8 @@ package pe.kr.ml.randomForest;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.UUID;
 
 import org.apache.hadoop.conf.Configuration;
@@ -74,7 +76,8 @@ public class RFDriver extends Configured implements Tool {
 			String inputPath = conf.get(ArgumentsConstants.INPUT_PATH);
 			Path inputParentPath = (new Path(inputPath)).getParent();
 			UUID uid = UUID.randomUUID();
-			Path bootstrapTrainDataPath = new Path(inputParentPath, "trainData_"+uid.toString()+".txt");
+			Date now = Calendar.getInstance().getTime();
+			Path bootstrapTrainDataPath = new Path(inputParentPath, "trainData_"+uid.toString()+"_"+now.getTime()+".txt");
 
 			long numTree = conf.getLong(ArgumentsConstants.NUM_PARTITION, 2);
 			long dataCopy = numTree + 1;
